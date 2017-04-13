@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "918969577295",
+    "firebase_url": "https://wakeme-91c98.firebaseio.com",
+    "project_id": "wakeme-91c98",
+    "storage_bucket": "wakeme-91c98.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:918969577295:android:f0ea9fa1040bd524",
+        "android_client_info": {
+          "package_name": "com.javgon.wakeme"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "918969577295-k5dupr8anble7rn3luhh2kujluk3hs4v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.javgon.wakeme",
+            "certificate_hash": "2ba29cd0d485afe17c28cb64a1d459c281691acc"
+          }
+        },
+        {
+          "client_id": "918969577295-asbdh5h1qv2pl72p02vimr3f7jcipcnp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwyDdrcvlMci3ojeUI4BthOcPfLvIK3SQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "918969577295-asbdh5h1qv2pl72p02vimr3f7jcipcnp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

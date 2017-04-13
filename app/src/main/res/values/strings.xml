@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">WakeMe</string>
+    <string name="login_auth_failed">Wrong email or password</string>
+    <string name="create_auth_failed">Could not create account at this time</string>
+    <string name="loading">Please wait</string>
+</resources>
