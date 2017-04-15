@@ -53,8 +53,8 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
     private SignInButton googleSignInButton;
     private EditText etEmail,etPassword;
     private ImageView imgLogo;
-    private String email;
-    private String password;
+    private String mEmail;
+    private String mPassword;
 
     public static AuthUserFragment newInstance(){
 
@@ -149,13 +149,11 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
 
     public void authCreateInstances(){
 
-        // [START config_signin]
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
-        // [END config_signin]
 
         mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                 //.enableAutoManage(this/* FragmentActivity */, this /* OnConnectionFailedListener */)
@@ -182,17 +180,16 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
 
     public void authSignIn(){
 
-        email=etEmail.getText().toString();
-        password=etEmail.getText().toString();
+        mEmail=etEmail.getText().toString();
+        mPassword=etEmail.getText().toString();
         try {
-            mAuth.signInWithEmailAndPassword(email, password)
+            mAuth.signInWithEmailAndPassword(mEmail, mPassword)
                     .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
                             // If sign in succesfull
                             closeFragment();
-
                             // If sign in fails, display a message to the user. If sign in succeeds
                             // the auth state listener will be notified and logic to handle the
                             // signed in user can be handled in the listener.
@@ -226,16 +223,17 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
 
     public void authCreateUser(){
 
-        email=etEmail.getText().toString();
-        password=etEmail.getText().toString();
+        mEmail=etEmail.getText().toString();
+        mPassword=etEmail.getText().toString();
         try {
-            mAuth.createUserWithEmailAndPassword(email, password)
+            mAuth.createUserWithEmailAndPassword(mEmail, mPassword)
                     .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
                             // If sign in succesfull
                             closeFragment();
+
                             // If sign in fails, display a message to the user. If sign in succeeds
                             // the auth state listener will be notified and logic to handle the
                             // signed in user can be handled in the listener.
@@ -304,7 +302,7 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
                         Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
                         //if sign in succesfull
                         closeFragment();
-
+                        System.out.println(" " + task.getResult().getUser().getDisplayName());
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.

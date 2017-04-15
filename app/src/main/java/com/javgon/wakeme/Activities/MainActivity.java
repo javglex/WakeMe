@@ -1,26 +1,29 @@
 package com.javgon.wakeme.Activities;
 
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.javgon.wakeme.Controller.PostServices;
 import com.javgon.wakeme.Fragments.AuthUserFragment;
+import com.javgon.wakeme.Other.LocationService;
 import com.javgon.wakeme.R;
 
 
 public class MainActivity extends BaseActivity {
 
     TextView tvWelcome;
+    FirebaseUser mUser;
+    LocationService mLoc;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         CheckUser();
-
-
+        mLoc= new LocationService(this);
     }
 
 
@@ -33,22 +36,29 @@ public class MainActivity extends BaseActivity {
 
 
     public void CheckUser(){
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
+        mUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (mUser != null) {
             getSupportActionBar().show();
 
+            PostServices post = PostServices.newInstance();
+            post.writeNewUser(mUser.getUid(),mUser.getDisplayName(), mUser.getEmail());
+            post.writeUpdateUserLocation(mUser.getUid(),"Mexico tepic now lmaooo it lit");
             // Name, email address, and profile photo Url
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
+            String name = mUser.getDisplayName();
+            String email = mUser.getEmail();
 
             // The user's ID, unique to the Firebase project. Do NOT use this value to
             // authenticate with your backend server, if you have one. Use
             // FirebaseUser.getToken() instead.
-            String uid = user.getUid();
+            String uid = mUser.getUid();
             tvWelcome=(TextView)findViewById(R.id.tv_welcome);
-            tvWelcome.setText(name + " " + email + " " + uid);
+            tvWelcome.setText(name + " " + email + " " + uid );
+            mLoc= new LocationService(this);
 
+            if(mLoc.canGetLocation()) { // gps enabled} // return boolean true/false
+                tvWelcome.setText(name + " " + email + " " + uid + "\n Location: " +mLoc.getLatitude() + "," +mLoc.getLongitude());
+            }else mLoc.showSettingsAlert();
 
         }else
             displayLogInPage();
@@ -70,6 +80,7 @@ public class MainActivity extends BaseActivity {
                     .addToBackStack(null)
                     .commit();
         }
+
 
 
     }
