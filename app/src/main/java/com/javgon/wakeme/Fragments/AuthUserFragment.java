@@ -1,5 +1,6 @@
 package com.javgon.wakeme.Fragments;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -32,6 +33,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.javgon.wakeme.Activities.BaseActivity;
 import com.javgon.wakeme.Activities.MainActivity;
 import com.javgon.wakeme.R;
 
@@ -159,7 +161,7 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
                 //.enableAutoManage(this/* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-
+        //firenbase
         mAuth=FirebaseAuth.getInstance();
         mAuthListener= new FirebaseAuth.AuthStateListener(){
             @Override
@@ -176,6 +178,8 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
                 }
             }
         };
+
+
     }
 
     public void authSignIn(){

@@ -15,6 +15,8 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.javgon.wakeme.Model.LCoordinates;
+
 
 /**
  * Created by http://www.androidhive.info/2012/07/android-gps-location-manager-tutorial/
@@ -51,7 +53,8 @@ public final class LocationService extends Service implements LocationListener {
         getLocation();
     }
 
-    public Location getLocation() {
+    public LCoordinates getLocation() {
+        LCoordinates shortLoc =  new LCoordinates();
         try {
             locationManager = (LocationManager) mContext
                     .getSystemService(LOCATION_SERVICE);
@@ -81,7 +84,9 @@ public final class LocationService extends Service implements LocationListener {
                                     .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                             if (location != null) {
                                 latitude = location.getLatitude();
+                                shortLoc.setLatitude(latitude);
                                 longitude = location.getLongitude();
+                                shortLoc.setLongitude(longitude);
                             }
                         }
                     }catch(SecurityException e){
@@ -103,7 +108,10 @@ public final class LocationService extends Service implements LocationListener {
                                         .getLastKnownLocation(LocationManager.GPS_PROVIDER);
                                 if (location != null) {
                                     latitude = location.getLatitude();
+                                    shortLoc.setLatitude(latitude);
                                     longitude = location.getLongitude();
+                                    shortLoc.setLongitude(longitude);
+
                                 }
                             }
                         } catch (SecurityException e){
@@ -120,7 +128,7 @@ public final class LocationService extends Service implements LocationListener {
             e.printStackTrace();
         }
 
-        return location;
+        return shortLoc;
     }
 
     /**
