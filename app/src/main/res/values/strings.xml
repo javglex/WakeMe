@@ -3,4 +3,7 @@
     <string name="login_auth_failed">Wrong email or password</string>
     <string name="create_auth_failed">Could not create account at this time</string>
     <string name="loading">Please wait</string>
+    <string name="title_activity_navigation_page">NavigationPage</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 </resources>

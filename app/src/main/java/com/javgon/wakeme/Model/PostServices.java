@@ -7,6 +7,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.javgon.wakeme.Activities.MainActivity;
 
@@ -86,6 +87,8 @@ public class PostServices {
                         alarm.setAlarmTimeHours(postSnapshot.child("alarmTimeHours").getValue(int.class));
                         alarm.setAlarmTimeMinutes(postSnapshot.child("alarmTimeMinutes").getValue(int.class));
                         alarm.setHoursUntilAlarm(postSnapshot.child("hoursUntilAlarm").getValue(int.class));
+                        GenericTypeIndicator<ArrayList<Integer>> genericTypeIndicator =new GenericTypeIndicator<ArrayList<Integer>>(){};
+                        alarm.setRepeatDays(postSnapshot.child("repeatDays").getValue(genericTypeIndicator));
                         alarms.add(alarm);
                     }
                     callback.onSuccess(alarms);

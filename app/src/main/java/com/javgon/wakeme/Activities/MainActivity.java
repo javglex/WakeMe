@@ -1,5 +1,6 @@
 package com.javgon.wakeme.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -29,11 +30,11 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         CheckUser();
-        /*
+
         DummyData du = new DummyData();
-        du.writeTestUsers(this,du.generateUsers());
+        //du.writeTestUsers(this,du.generateUsers());
+        Log.d("alarms","----------------------------- WRITING TEST ALARMS");
         du.writeTestAlarms(this,du.generateAlarms());
-        */
 
         //Log.d("hours until",""+alarm.getHoursUntilAlarm());
 
@@ -51,6 +52,11 @@ public class MainActivity extends BaseActivity {
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (mUser != null) {
+
+            Intent myIntent = new Intent(MainActivity.this, NavigationPage.class);
+           // myIntent.putExtra("key", value); //Optional parameters
+            MainActivity.this.startActivity(myIntent);
+
             getSupportActionBar().show();
 
             PostServices post = PostServices.getInstance(this);
@@ -91,6 +97,7 @@ public class MainActivity extends BaseActivity {
             }else
                 mLoc.showSettingsAlert();
 
+            Log.d("alarms","------------- READING TEST ALARMS-------------------");
 
             post.readAlarms(new PostServices.AlarmCallback(){
                 @Override
