@@ -107,19 +107,20 @@ public class Alarm {
 
 
         int weekDay=today.get(Calendar.DAY_OF_WEEK)-1; //0-6 (sundat to saturday)
-        int nearestDistance=-100;
+        Log.d("alarm today", ""+weekDay);
+        int nearestDistance=100;
         int prevNearestDistance=-100;
         for (int i=0; i<repeatDays.size(); i++)
         {
             prevNearestDistance=repeatDays.get(i)-weekDay;
-            if (prevNearestDistance>nearestDistance){
+            if (prevNearestDistance<0)
+                prevNearestDistance+=7;
+            if (prevNearestDistance<nearestDistance){
                 nearestDistance=prevNearestDistance;
             }
 
         }
         Log.d("alarms distance", ""+nearestDistance);
-        if (nearestDistance<0)
-            return 7+nearestDistance;
-        else return nearestDistance;
+        return nearestDistance;
     }
 }

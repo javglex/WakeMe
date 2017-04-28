@@ -11,6 +11,7 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.javgon.wakeme.Activities.MainActivity;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,7 +77,7 @@ public class PostServices {
     public void readAlarms(final AlarmCallback callback){
         DatabaseReference ref = mDatabase.child("alarms");
         //get alarms that are about to ring, limit to first 3
-        ref.orderByChild("hoursUntilAlarm").startAt(0).limitToFirst(3).addListenerForSingleValueEvent(new ValueEventListener() {
+        ref.orderByChild("hoursUntilAlarm").startAt(0).limitToFirst(5).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 try {
@@ -153,6 +154,40 @@ public class PostServices {
 
     }
 
+    public void getAlarmLocation(ArrayList<Alarm> alarms, final AlarmLocationCallBack callback){
+
+        final ArrayList<LCoordinates> locations = new ArrayList<>();
+        DatabaseReference ref = mDatabase.child("users");
+
+        for (Alarm alarm: alarms){
+            Log.d("alarm getalarmlocation", alarm.toString());
+
+            ref.child(alarm.getAlarmID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    try {
+                        LCoordinates loc = new LCoordinates();
+                        loc.setLocation(snapshot.child("lcoordinates").getValue(LCoordinates.class));
+                        Log.d("alarm getalarmlocation2", loc.toString());
+                        locations.add(loc);
+                        callback.onSuccess(locations);
+                    } catch ( Exception e){
+                        Log.e("readuserloc", e.toString());
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError firebaseError) {
+                    Log.e("The read failed: ", firebaseError.getMessage());
+                    callback.onFail(firebaseError.getMessage());
+                }
+
+            });
+        }
+
+
+        return;
+    }
+
 
     public interface LocCallback{
         void onSuccess(LCoordinates loc);
@@ -162,7 +197,11 @@ public class PostServices {
     public interface AlarmCallback{
         void onSuccess(ArrayList<Alarm> alarms);
         void onFail(String msg);
+    }
 
+    public interface AlarmLocationCallBack{
+        void onSuccess(ArrayList<LCoordinates> alarmLocations);
+        void onFail(String msg);
     }
 
 

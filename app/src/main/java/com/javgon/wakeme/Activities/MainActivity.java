@@ -33,8 +33,8 @@ public class MainActivity extends BaseActivity {
 
         DummyData du = new DummyData();
         //du.writeTestUsers(this,du.generateUsers());
-        Log.d("alarms","----------------------------- WRITING TEST ALARMS");
-        du.writeTestAlarms(this,du.generateAlarms());
+        //Log.d("alarms","----------------------------- WRITING TEST ALARMS");
+        //du.writeTestAlarms(this,du.generateAlarms());
 
         //Log.d("hours until",""+alarm.getHoursUntilAlarm());
 
@@ -56,9 +56,6 @@ public class MainActivity extends BaseActivity {
             Intent myIntent = new Intent(MainActivity.this, NavigationPage.class);
            // myIntent.putExtra("key", value); //Optional parameters
             MainActivity.this.startActivity(myIntent);
-
-            getSupportActionBar().show();
-
             PostServices post = PostServices.getInstance(this);
 
             post.writeUser(mUser.getUid(),mUser.getDisplayName(), mUser.getEmail());
@@ -84,7 +81,7 @@ public class MainActivity extends BaseActivity {
                 post.readUserLocation(uid,new PostServices.LocCallback(){
                     @Override
                     public void onSuccess(LCoordinates loc){
-                        displayUserLocation(loc); //then display list of atms
+                        displayUserLocation(loc); //then display user location
                     }
                     @Override
                     public void onFail(String msg){
@@ -97,22 +94,7 @@ public class MainActivity extends BaseActivity {
             }else
                 mLoc.showSettingsAlert();
 
-            Log.d("alarms","------------- READING TEST ALARMS-------------------");
 
-            post.readAlarms(new PostServices.AlarmCallback(){
-                @Override
-                public void onSuccess(ArrayList<Alarm> alarms){
-                    for (Alarm alarm : alarms){
-                        Log.d("alarms ", " ID: "+alarm.getAlarmID()+ "  hours until: "+alarm.getHoursUntilAlarm()+ "  alarmtime: "+ alarm.getAlarmTimeHours()+":"+alarm.getAlarmTimeMinutes());
-                    }
-                }
-                @Override
-                public void onFail(String msg){
-                    Log.e("FAIL", msg);
-                    Toast.makeText(MainActivity.this, msg,
-                            Toast.LENGTH_SHORT).show();
-                }
-            });
 
         }else
             displayLogInPage();

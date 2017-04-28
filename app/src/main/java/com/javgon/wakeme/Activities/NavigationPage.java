@@ -1,10 +1,6 @@
 package com.javgon.wakeme.Activities;
 
 import android.app.FragmentManager;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-
-
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
@@ -51,28 +47,20 @@ public class NavigationPage extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-       // mViewPager.setCurrentItem(1); //begin in middle
+        mViewPager.setCurrentItem(1); //begin in middle
 
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
 
     }
 
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_navigation_page, menu);
         return true;
-    }
+    }*/
 
-    @Override
+   /* @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -85,7 +73,7 @@ public class NavigationPage extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 
 
     public static class PlaceholderFragment extends Fragment {
