@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_edit_clock"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:nestedScrollingEnabled="false"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:weightSum="3">
+
+        <NumberPicker
+            android:id="@+id/np_hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:descendantFocusability="blocksDescendants"
+            android:nestedScrollingEnabled="false" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:elevation="1dp"
+            android:gravity="center"
+            android:text=":"
+            android:textSize="64dp" />
+
+        <NumberPicker
+            android:id="@+id/np_minutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:descendantFocusability="blocksDescendants"
+            android:nestedScrollingEnabled="false" />
+
+        <ToggleButton
+            android:id="@+id/tb_am_pm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:background="@android:color/holo_blue_light"
+            android:text="AM/PM"
+            android:textOff="PM"
+            android:textOn="AM" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:orientation="horizontal">
+
+        <ToggleButton
+            android:id="@+id/tb_mon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/toggle_background"
+            android:text="Mon"
+            android:textOff="Mon"
+            android:textOn="Mon" />
+
+        <ToggleButton
+            android:id="@+id/tb_tue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/toggle_background"
+            android:text="Tue"
+            android:textOff="Tue"
+            android:textOn="Tue" />
+
+        <ToggleButton
+            android:id="@+id/tb_wed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/toggle_background"
+            android:text="Wed"
+            android:textOff="Wed"
+            android:textOn="Wed" />
+
+        <ToggleButton
+            android:id="@+id/tb_thur"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/toggle_background"
+            android:text="Thur"
+            android:textOff="Thur"
+            android:textOn="Thur" />
+
+        <ToggleButton
+            android:id="@+id/tb_fri"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/toggle_background"
+            android:text="Fri"
+            android:textOff="Fri"
+            android:textOn="Fri" />
+
+        <ToggleButton
+            android:id="@+id/tb_sat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/toggle_background"
+            android:text="Sat"
+            android:textOff="Sat"
+            android:textOn="Sat" />
+
+        <ToggleButton
+            android:id="@+id/tb_sun"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/toggle_background"
+            android:text="Sun"
+            android:textOff="Sun"
+            android:textOn="Sun" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            android:layout_weight=".8"
+            android:text="Save" />
+
+        <Button
+            android:id="@+id/btn_delete_alarm"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="12dp"
+            android:layout_weight=".2" />
+    </LinearLayout>
+</LinearLayout>

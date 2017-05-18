@@ -7,7 +7,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Created by javgon on 4/20/2017.
@@ -17,9 +19,9 @@ public class Alarm {
 
     int alarmTimeHours;  //hour that alarm is set to
     int alarmTimeMinutes; //minute that alarm is set to
-    String alarmID;     //User the alarm belongs to
+    String alarmID;     //to differentiate between different alarms the user may have in db
     int hoursUntilAlarm;    //time until alarm rings
-    ArrayList<Integer> repeatDays = new ArrayList(7);  //array of bools each representing a day of the week (index0 = sunday, index6 = saturday)
+    ArrayList<Integer> repeatDays = new ArrayList<>(7);  //array of bools each representing a day of the week (index0 = sunday, index6 = saturday)
 
 
     public Alarm(){
@@ -32,6 +34,7 @@ public class Alarm {
         this.alarmTimeHours=alarmTimeHours;
 
     }
+
 
     public void setAlarmID(String id){
         this.alarmID=id;
@@ -103,16 +106,16 @@ public class Alarm {
         return repeatDays;
     }
 
-    public int findNearestDistance(Calendar today){
+    public int findNearestDistance(Calendar cal){
 
 
-        int weekDay=today.get(Calendar.DAY_OF_WEEK)-1; //0-6 (sundat to saturday)
-        Log.d("alarm today", ""+weekDay);
+        int today=cal.get(Calendar.DAY_OF_WEEK)-1; //0-6 (sundat to saturday)
+        Log.d("alarm today", ""+today);
         int nearestDistance=100;
         int prevNearestDistance=-100;
-        for (int i=0; i<repeatDays.size(); i++)
+        for (Integer day : repeatDays)
         {
-            prevNearestDistance=repeatDays.get(i)-weekDay;
+            prevNearestDistance=day-today;
             if (prevNearestDistance<0)
                 prevNearestDistance+=7;
             if (prevNearestDistance<nearestDistance){

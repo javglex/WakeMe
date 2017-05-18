@@ -54,7 +54,7 @@ class WorldMapSurfaceView extends SurfaceView implements Runnable{
         float ratio= (float)(bitmapOptions.outHeight)/bitmapOptions.outWidth; //to keep image scaled correctly
         map = Bitmap.createScaledBitmap(map, (int)(screenSize.x) , (int)(screenSize.x*ratio) , true);
         pinpoint=BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round);
-        pinpoint= Bitmap.createScaledBitmap(pinpoint, 30 , 30 , true);
+        pinpoint= Bitmap.createScaledBitmap(pinpoint, 80 , 80 , true);
 
     }
 
@@ -101,6 +101,7 @@ class WorldMapSurfaceView extends SurfaceView implements Runnable{
                 canvas.drawColor(Color.BLACK);
                 canvas.drawBitmap(map, 0, 0, null);
                 for (LCoordinates location : locations){
+                    Log.d("worldmap location", location.toString());
                     int convertLatitude=(int)(location.getLatitude())+180;
                     int convertLongitutde=(int)(location.getLongitude())+90;
                     canvas.drawBitmap(pinpoint,convertLatitude,convertLongitutde,null);

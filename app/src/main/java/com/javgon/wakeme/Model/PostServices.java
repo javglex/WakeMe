@@ -10,10 +10,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.javgon.wakeme.Activities.MainActivity;
+import com.javgon.wakeme.Other.MyUserData;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by javgon on 4/13/2017.
@@ -55,6 +58,7 @@ public class PostServices {
         mDatabase.child("users").child(userId).setValue(user);
     }
 
+
     public void writeUser(User user) {
         mDatabase.child("users").child(user.getUid()).setValue(user);
     }
@@ -66,14 +70,84 @@ public class PostServices {
 
     }
 
-    public void writeAlarm(Alarm alarm){
+    /**
+     * writes alarm to database
+     * @param alarm takes in alarm object
+     */
+    public void writeAlarm(Alarm alarm, int alarmNum){
         try{
-            mDatabase.child("alarms").child(alarm.getAlarmID()).setValue(alarm);
+            mDatabase.child("alarms").child(alarm.getAlarmID()+alarmNum).setValue(alarm);
         } catch ( Exception e){
             Log.e("writeAlarm", e.getMessage().toString());
         }
     }
 
+    public void deleteAlarm(String alarmId, int alarmNum){
+
+        try{
+            mDatabase.child("alarms").child(alarmId+alarmNum).removeValue();
+            for (int i=0; i<MyUserData.getInstance().getAlarmSize(); i++)   //fix alarm list so that everything is in order again (no holes)
+            {
+                Alarm alarm=MyUserData.getInstance().getAlarm(i);
+                writeAlarm(alarm,i);
+            }
+        } catch ( Exception e){
+
+            Log.e("deleteAlarm", e.getMessage().toString());
+
+        }
+    }
+
+    /**
+     *
+     */
+    public void readOwnAlarms( final AlarmCallback callback ) {
+        DatabaseReference ref = mDatabase.child("alarms");
+        String uid = MyUserData.getInstance().getUserID();
+        //get alarms that belong to user
+        Log.d("read own alarm","got in function, uid: "+MyUserData.getInstance().getUserID());
+
+        ref.orderByChild("alarmID").startAt(uid)
+                .endAt(uid+"\uf8ff").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                try {
+                    Log.d("read own alarm", "got something" +snapshot.getKey());
+
+                    ArrayList<Alarm> alarms = new ArrayList<>();
+                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+                        Alarm alarm = new Alarm();
+                        alarm.setAlarmID(postSnapshot.child("alarmID").getValue(String.class));
+                        alarm.setAlarmTimeHours(postSnapshot.child("alarmTimeHours").getValue(int.class));
+                        alarm.setAlarmTimeMinutes(postSnapshot.child("alarmTimeMinutes").getValue(int.class));
+                        alarm.setHoursUntilAlarm(postSnapshot.child("hoursUntilAlarm").getValue(int.class));
+                        GenericTypeIndicator<ArrayList<Integer>> genericTypeIndicator =new GenericTypeIndicator<ArrayList<Integer>>(){};
+                        alarm.setRepeatDays(postSnapshot.child("repeatDays").getValue(genericTypeIndicator));
+                        alarms.add(alarm);
+                        Log.d("read own alarm", alarm.getAlarmID());
+                    }
+                    callback.onSuccess(alarms);
+
+                } catch ( Exception e){
+                    Log.e("readuserloc", e.toString());
+                    callback.onFail(e.getMessage());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError firebaseError) {
+                callback.onFail(firebaseError.getMessage());
+            }
+
+        });
+        return;
+    }
+
+
+
+    /**
+     * Read other user's alarms that are within an hour of being activated
+     */
     public void readAlarms(final AlarmCallback callback){
         DatabaseReference ref = mDatabase.child("alarms");
         //get alarms that are about to ring, limit to first 3
@@ -90,6 +164,8 @@ public class PostServices {
                         alarm.setHoursUntilAlarm(postSnapshot.child("hoursUntilAlarm").getValue(int.class));
                         GenericTypeIndicator<ArrayList<Integer>> genericTypeIndicator =new GenericTypeIndicator<ArrayList<Integer>>(){};
                         alarm.setRepeatDays(postSnapshot.child("repeatDays").getValue(genericTypeIndicator));
+                        Log.d("read alarms",alarm.getAlarmID());
+
                         alarms.add(alarm);
                     }
                     callback.onSuccess(alarms);
@@ -160,8 +236,7 @@ public class PostServices {
         DatabaseReference ref = mDatabase.child("users");
 
         for (Alarm alarm: alarms){
-            Log.d("alarm getalarmlocation", alarm.toString());
-
+            Log.d("alarm getalarmlocation", alarm.getAlarmID().toString());
             ref.child(alarm.getAlarmID()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot snapshot) {
