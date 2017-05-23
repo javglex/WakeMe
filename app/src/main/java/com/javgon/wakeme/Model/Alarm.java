@@ -19,7 +19,8 @@ public class Alarm {
 
     int alarmTimeHours;  //hour that alarm is set to
     int alarmTimeMinutes; //minute that alarm is set to
-    String alarmID;     //to differentiate between different alarms the user may have in db
+    String userID;     //to differentiate between different alarms the user may have in db
+    int alarmID;     //to identify different alarms under same user account
     int hoursUntilAlarm;    //time until alarm rings
     ArrayList<Integer> repeatDays = new ArrayList<>(7);  //array of bools each representing a day of the week (index0 = sunday, index6 = saturday)
 
@@ -28,7 +29,8 @@ public class Alarm {
 
     }
 
-    public Alarm(String alarmID, int alarmTimeHours, int alarmTimeMinutes){
+    public Alarm(String userID, int alarmID, int alarmTimeHours, int alarmTimeMinutes){
+        this.userID=userID;
         this.alarmID=alarmID;
         this.alarmTimeMinutes=alarmTimeMinutes;
         this.alarmTimeHours=alarmTimeHours;
@@ -36,12 +38,14 @@ public class Alarm {
     }
 
 
-    public void setAlarmID(String id){
-        this.alarmID=id;
+    public void setUserID(String id){
+        this.userID=id;
     }
-    public String getAlarmID(){
-        return this.alarmID;
+    public String getUserID(){
+        return this.userID;
     }
+    public void setAlarmID(int alarmID){this.alarmID=alarmID;}
+    public int getAlarmID(){return this.alarmID;}
 
     public void setAlarmTime(JTime t){
         this.alarmTimeHours=t.getHour();
@@ -55,18 +59,13 @@ public class Alarm {
     public int getAlarmTimeHours() {
         return alarmTimeHours;
     }
-
     public void setAlarmTimeHours(int alarmTimeHours) {
         this.alarmTimeHours = alarmTimeHours;
     }
-
     public int getAlarmTimeMinutes() {
         return alarmTimeMinutes;
     }
-
-    public void setAlarmTimeMinutes(int alarmTimeMinutes) {
-        this.alarmTimeMinutes = alarmTimeMinutes;
-    }
+    public void setAlarmTimeMinutes(int alarmTimeMinutes) {this.alarmTimeMinutes = alarmTimeMinutes;}
 
     public void setHoursUntilAlarm(int hours){
         this.hoursUntilAlarm=hours;
@@ -125,5 +124,15 @@ public class Alarm {
         }
         Log.d("alarms distance", ""+nearestDistance);
         return nearestDistance;
+    }
+
+
+    @Override
+    public String toString(){
+        String toString;
+        toString="\tHour: "+alarmTimeHours + " : " + "Minutes: "+ alarmTimeMinutes;
+        toString+="\n\tUserID: "+ userID + ", alarmID: " + alarmID;
+
+        return toString;
     }
 }

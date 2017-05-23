@@ -3,6 +3,7 @@ package com.javgon.wakeme.Model;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,6 +26,7 @@ import java.util.Set;
 public class PostServices {
     public static PostServices postServices;
     private static DatabaseReference mDatabase;
+    private final String READTAG="READPOST";
     private LCoordinates  mLoc = new LCoordinates();
     private static Context mContext;
 
@@ -74,22 +76,24 @@ public class PostServices {
      * writes alarm to database
      * @param alarm takes in alarm object
      */
-    public void writeAlarm(Alarm alarm, int alarmNum){
+    public void writeAlarm(Alarm alarm){
         try{
-            mDatabase.child("alarms").child(alarm.getAlarmID()+alarmNum).setValue(alarm);
+            String uid=MyUserData.getInstance().getUserID();
+            mDatabase.child("alarms").child(uid+alarm.getAlarmID()).setValue(alarm);
         } catch ( Exception e){
             Log.e("writeAlarm", e.getMessage().toString());
         }
     }
 
-    public void deleteAlarm(String alarmId, int alarmNum){
+    public void deleteAlarm(int alarmId){
 
         try{
-            mDatabase.child("alarms").child(alarmId+alarmNum).removeValue();
+            String uid=MyUserData.getInstance().getUserID();
+            mDatabase.child("alarms").child(uid+alarmId).removeValue();
             for (int i=0; i<MyUserData.getInstance().getAlarmSize(); i++)   //fix alarm list so that everything is in order again (no holes)
             {
                 Alarm alarm=MyUserData.getInstance().getAlarm(i);
-                writeAlarm(alarm,i);
+                writeAlarm(alarm);
             }
         } catch ( Exception e){
 
@@ -105,31 +109,32 @@ public class PostServices {
         DatabaseReference ref = mDatabase.child("alarms");
         String uid = MyUserData.getInstance().getUserID();
         //get alarms that belong to user
-        Log.d("read own alarm","got in function, uid: "+MyUserData.getInstance().getUserID());
+        Log.d(READTAG,"got in function, uid: "+MyUserData.getInstance().getUserID());
 
-        ref.orderByChild("alarmID").startAt(uid)
+        ref.orderByKey().startAt(uid)
                 .endAt(uid+"\uf8ff").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 try {
-                    Log.d("read own alarm", "got something" +snapshot.getKey());
+                    Log.d(READTAG, "got something " +snapshot.getKey() +" "+ snapshot.getChildrenCount());
 
                     ArrayList<Alarm> alarms = new ArrayList<>();
                     for (DataSnapshot postSnapshot: snapshot.getChildren()) {
                         Alarm alarm = new Alarm();
-                        alarm.setAlarmID(postSnapshot.child("alarmID").getValue(String.class));
+                        alarm.setUserID(postSnapshot.child("userID").getValue(String.class));
+                        alarm.setAlarmID(postSnapshot.child("alarmID").getValue(int.class));
                         alarm.setAlarmTimeHours(postSnapshot.child("alarmTimeHours").getValue(int.class));
                         alarm.setAlarmTimeMinutes(postSnapshot.child("alarmTimeMinutes").getValue(int.class));
                         alarm.setHoursUntilAlarm(postSnapshot.child("hoursUntilAlarm").getValue(int.class));
                         GenericTypeIndicator<ArrayList<Integer>> genericTypeIndicator =new GenericTypeIndicator<ArrayList<Integer>>(){};
                         alarm.setRepeatDays(postSnapshot.child("repeatDays").getValue(genericTypeIndicator));
                         alarms.add(alarm);
-                        Log.d("read own alarm", alarm.getAlarmID());
+                        Log.d(READTAG, " in readownlarms: "+alarm.getUserID());
                     }
                     callback.onSuccess(alarms);
 
                 } catch ( Exception e){
-                    Log.e("readuserloc", e.toString());
+                    Log.e(READTAG, e.toString());
                     callback.onFail(e.getMessage());
                 }
             }
@@ -158,20 +163,21 @@ public class PostServices {
                     ArrayList<Alarm> alarms = new ArrayList<>();
                     for (DataSnapshot postSnapshot: snapshot.getChildren()) {
                         Alarm alarm = new Alarm();
-                        alarm.setAlarmID(postSnapshot.child("alarmID").getValue(String.class));
+                        alarm.setUserID(postSnapshot.child("userID").getValue(String.class));
+                        alarm.setAlarmID(postSnapshot.child("alarmID").getValue(int.class));
                         alarm.setAlarmTimeHours(postSnapshot.child("alarmTimeHours").getValue(int.class));
                         alarm.setAlarmTimeMinutes(postSnapshot.child("alarmTimeMinutes").getValue(int.class));
                         alarm.setHoursUntilAlarm(postSnapshot.child("hoursUntilAlarm").getValue(int.class));
                         GenericTypeIndicator<ArrayList<Integer>> genericTypeIndicator =new GenericTypeIndicator<ArrayList<Integer>>(){};
                         alarm.setRepeatDays(postSnapshot.child("repeatDays").getValue(genericTypeIndicator));
-                        Log.d("read alarms",alarm.getAlarmID());
+                        Log.d(READTAG," in readother users alarms : "+alarm.getUserID());
 
                         alarms.add(alarm);
                     }
                     callback.onSuccess(alarms);
 
                 } catch ( Exception e){
-                    Log.e("readuserloc", e.toString());
+                    Log.e(READTAG, e.toString());
                     callback.onFail(e.getMessage());
                 }
             }
@@ -196,22 +202,22 @@ public class PostServices {
                     try {
                         //for (DataSnapshot postSnapshot: snapshot.getChildren()) {
                         //Getting the data from snapshot
-                        Log.d("DB test loc2", String.valueOf(snapshot.getValue()));
+                        Log.d(READTAG, String.valueOf(snapshot.getValue()));
 
                         User user = new User();
                         user.setEmail(snapshot.child("email").getValue(String.class));
                         user.setLCoordinates(snapshot.child("lcoordinates").getValue(LCoordinates.class));
                         user.setUsername(snapshot.child("username").getValue(String.class));
-                        Log.d("DB test loc", user.getLCoordinates().toString());
+                        Log.d(READTAG, user.getLCoordinates().toString());
                         //Adding it to a string
 
                         mLoc.setLongitude(user.getLCoordinates().getLongitude());
                         mLoc.setLatitude(user.getLCoordinates().getLatitude());
-                        Log.d("DB test loc3",mLoc.toString());
+                        Log.d(READTAG,mLoc.toString());
                         callback.onSuccess(mLoc);
 
                     } catch ( Exception e){
-                        Log.e("readuserloc", e.toString());
+                        Log.e(READTAG, e.toString());
 
                     }
 
@@ -224,30 +230,30 @@ public class PostServices {
                 }
 
             });
-        Log.d("DB test loc4", mLoc.toString());
+        Log.d(READTAG, mLoc.toString());
 
         return;
 
     }
 
-    public void getAlarmLocation(ArrayList<Alarm> alarms, final AlarmLocationCallBack callback){
+    public void getUserLocationFromAlarm(ArrayList<Alarm> alarms, final AlarmLocationCallBack callback){
 
         final ArrayList<LCoordinates> locations = new ArrayList<>();
         DatabaseReference ref = mDatabase.child("users");
 
         for (Alarm alarm: alarms){
-            Log.d("alarm getalarmlocation", alarm.getAlarmID().toString());
-            ref.child(alarm.getAlarmID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            Log.d(READTAG, "in get alarm location :  "+ alarm.getUserID().toString());
+            ref.child(alarm.getUserID()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot snapshot) {
                     try {
                         LCoordinates loc = new LCoordinates();
                         loc.setLocation(snapshot.child("lcoordinates").getValue(LCoordinates.class));
-                        Log.d("alarm getalarmlocation2", loc.toString());
+                        Log.d(READTAG, loc.toString());
                         locations.add(loc);
                         callback.onSuccess(locations);
                     } catch ( Exception e){
-                        Log.e("readuserloc", e.toString());
+                        Log.e(READTAG, e.toString());
                     }
                 }
                 @Override
@@ -263,6 +269,40 @@ public class PostServices {
         return;
     }
 
+    public void getUserInfoFromAlarm(ArrayList<Alarm> alarms, final UsersCallBack callback){
+        final ArrayList<User> users = new ArrayList<>();
+        DatabaseReference ref = mDatabase.child("users");
+
+        for (Alarm alarm: alarms){
+            Log.d(READTAG, "in get user info :  "+ alarm.getUserID().toString());
+            ref.child(alarm.getUserID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    try {
+                        User user = new User();
+                        user.setEmail(snapshot.child("email").getValue(String.class));
+                        user.setLCoordinates(snapshot.child("lcoordinates").getValue(LCoordinates.class));
+                        user.setUsername(snapshot.child("username").getValue(String.class));
+                        user.setUid(snapshot.child("uid").getValue(String.class));
+                        Log.d(READTAG, user.getLCoordinates().toString());
+
+                        users.add(user);
+                        callback.onSuccess(users);
+
+                    } catch ( Exception e){
+                        Log.e(READTAG, e.toString());
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError firebaseError) {
+                    Log.e("The read failed: ", firebaseError.getMessage());
+                    callback.onFail(firebaseError.getMessage());
+                }
+
+            });
+        }
+    }
+
 
     public interface LocCallback{
         void onSuccess(LCoordinates loc);
@@ -276,6 +316,11 @@ public class PostServices {
 
     public interface AlarmLocationCallBack{
         void onSuccess(ArrayList<LCoordinates> alarmLocations);
+        void onFail(String msg);
+    }
+
+    public interface UsersCallBack{
+        void onSuccess(ArrayList<User> users);
         void onFail(String msg);
     }
 

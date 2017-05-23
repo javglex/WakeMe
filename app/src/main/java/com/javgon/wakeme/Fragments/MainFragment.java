@@ -122,7 +122,7 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
     private void getAlarmLocations(ArrayList<Alarm> alarms){
         PostServices post = PostServices.getInstance(getActivity());
 
-        post.getAlarmLocation(alarms,new PostServices.AlarmLocationCallBack(){
+        post.getUserLocationFromAlarm(alarms,new PostServices.AlarmLocationCallBack(){
             @Override
             public void onSuccess(ArrayList<LCoordinates> locations){
                 worldMapSurfaceView.setCoordinates(locations);
@@ -190,7 +190,7 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
      */
     private void createAlarmFrag(int id, Alarm alarm){
         //inflate card page
-        AlarmClockFragment nextFrag= AlarmClockFragment.newInstance(alarm, id-1);
+        AlarmClockFragment nextFrag= AlarmClockFragment.newInstance(alarm);
         if (getFragmentManager().findFragmentByTag("ALARMCLOCK"+id)==null) { //if fragment does not exist
             getFragmentManager().beginTransaction()
                     .replace(id, nextFrag, "ALARMCLOCK"+id)
@@ -204,19 +204,17 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
         switch (v.getId()) {
             case R.id.layout_add_alarm:
                 PostServices post = PostServices.getInstance(getActivity());
-                Alarm alarm = new Alarm();
                 String uid= MyUserData.getInstance().getUserID();
-                int numAlarms = MyUserData.getInstance().getAlarmSize();
-                alarm.setAlarmID(uid);
-                alarm.setAlarmTimeHours(12);
-                alarm.setAlarmTimeMinutes(00);
+                int alarmId=MyUserData.getInstance().getAvailableID();
+                Alarm alarm = new Alarm(uid,alarmId,12,00);
                 ArrayList<Integer> repeat = new ArrayList<>(7);
                 repeat.add(1);
                 repeat.add(2);
                 alarm.setRepeatDays(repeat);
                 MyUserData.getInstance().addAlarm(alarm);
-                post.writeAlarm(alarm, numAlarms);
-                addAlarmToView(alarm,numAlarms);
+                Log.d("ALARMCLOCK",MyUserData.getInstance().toString());
+                post.writeAlarm(alarm);
+                addAlarmToView(alarm,alarmId);
                 break;
             default:
                 break;
