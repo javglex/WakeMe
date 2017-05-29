@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+
+            android:id="@+id/Idofbg3"
+            android:gravity="fill"
+            android:drawable="@drawable/background_gradient" />
+
+    <item
+            android:id="@+id/Idofbg2"
+            android:gravity="fill"
+            android:drawable="@drawable/background_gradient_alt" />
+
+    <item
+            android:id="@+id/Idofbg1"
+            android:gravity="fill"
+            android:drawable="@drawable/background_gradient_alt" />
+
+</layer-list>

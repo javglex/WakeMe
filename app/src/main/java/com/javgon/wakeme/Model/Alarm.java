@@ -3,6 +3,7 @@ package com.javgon.wakeme.Model;
 import android.util.Log;
 
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -15,7 +16,7 @@ import java.util.Set;
  * Created by javgon on 4/20/2017.
  */
 
-public class Alarm {
+public class Alarm implements Serializable{
 
     int alarmTimeHours;  //hour that alarm is set to
     int alarmTimeMinutes; //minute that alarm is set to

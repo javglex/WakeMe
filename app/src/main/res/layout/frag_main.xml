@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@drawable/background_gradient"
+    android:fitsSystemWindows="true"
     android:orientation="vertical"
     android:weightSum="1"
-    android:fitsSystemWindows="true"
     app:theme="@style/AppTheme.NoActionBar">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="32dp"
-        android:layout_weight=".5"
-        android:animateLayoutChanges="true"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/layout_map"
+        android:layout_marginTop="16dp"
+        android:layout_weight=".6"
         android:nestedScrollingEnabled="false">
 
         <LinearLayout
             android:id="@+id/layout_alarm_clocks"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
             android:animateLayoutChanges="true"
             android:gravity="center_horizontal"
@@ -54,22 +55,25 @@
     </ScrollView>
 
     <LinearLayout
+        android:id="@+id/layout_map"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_gravity="center_horizontal"
-        android:layout_weight=".5"
+        android:layout_weight="1"
         android:gravity="center_horizontal"
         android:orientation="horizontal">
 
         <RelativeLayout
             android:id="@+id/fl_map_view"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
             android:gravity="center_horizontal"
-            android:minWidth="500dp">
+            android:minWidth="500dp"
+            android:paddingBottom="@dimen/fabs_top_margin">
 
         </RelativeLayout>
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

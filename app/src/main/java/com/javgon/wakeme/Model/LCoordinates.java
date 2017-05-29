@@ -1,14 +1,18 @@
 package com.javgon.wakeme.Model;
 
+import java.io.Serializable;
+
 /**
  * Created by javgon on 4/18/2017.
  */
 
-public class LCoordinates {
+public class LCoordinates implements Serializable {
     private double latitude;
     private double longitude;
 
-    public LCoordinates(){}
+    public LCoordinates(){
+        latitude=longitude=0;
+    }
 
 
     public void setLatitude(double latitude){

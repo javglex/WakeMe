@@ -24,37 +24,36 @@ import com.javgon.wakeme.Model.LCoordinates;
  */
 
 public final class LocationService extends Service implements LocationListener {
-
+    public static LocationService locationService;
     private final Context mContext;
-
-    // flag for GPS status
-    boolean isGPSEnabled = false;
-
-    // flag for network status
-    boolean isNetworkEnabled = false;
-
+    boolean isGPSEnabled = false;     // flag for GPS status
+    boolean isNetworkEnabled = false;     // flag for network status
+    boolean isPassiveEnabled=false;
     boolean canGetLocation = false;
-
     Location location; // location
     double latitude; // latitude
     double longitude; // longitude
-
-    // The minimum distance to change Updates in meters
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
-
-    // The minimum time between updates in milliseconds
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;     // 10 meter difference required to update location
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;     //minimum time before updates
+    Location shortLoc =  new Location("USER");
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
 
     public LocationService(Context context) {
         this.mContext = context;
-        getLocation();
     }
 
-    public LCoordinates getLocation() {
-        LCoordinates shortLoc =  new LCoordinates();
+
+
+    public static LocationService getInstance(Context context) {
+        if (locationService == null) {
+            locationService = new LocationService(context);
+        }
+        return locationService;
+    }
+
+    public void getLocation(final LocationService.LocationCallBack callback) {
         try {
             locationManager = (LocationManager) mContext
                     .getSystemService(LOCATION_SERVICE);
@@ -67,68 +66,113 @@ public final class LocationService extends Service implements LocationListener {
             isNetworkEnabled = locationManager
                     .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-            if (!isGPSEnabled && !isNetworkEnabled) {
+            isPassiveEnabled=locationManager
+                    .isProviderEnabled(LocationManager.PASSIVE_PROVIDER);
+
+            if (!isGPSEnabled && !isNetworkEnabled && !isPassiveEnabled) {
                 // no network provider is enabled
-            } else {
+                Log.d("GPS", "no available gps'");
+                showSettingsAlert();
+
+            } else
+            {
                 this.canGetLocation = true;
                 // First get location from Network Provider
+
                 if (isNetworkEnabled) {
-                    try {
-                        locationManager.requestLocationUpdates(
-                                LocationManager.NETWORK_PROVIDER,
-                                MIN_TIME_BW_UPDATES,
-                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                        Log.d("Network", "Network");
-                        if (locationManager != null) {
-                            location = locationManager
-                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                shortLoc.setLatitude(latitude);
-                                longitude = location.getLongitude();
-                                shortLoc.setLongitude(longitude);
-                            }
-                        }
-                    }catch(SecurityException e){
-                        Log.e("GPS isNetworkEnabled  ",e.getMessage().toString() );
-                        e.printStackTrace();
-                    }
-                }
-                // if GPS Enabled get lat/long using GPS Services
+                    networkProvider(callback);
+                } else
+                if (isPassiveEnabled) {
+                    passiveProvider(callback);
+                } else
                 if (isGPSEnabled) {
-                    if (location == null) {
-                        try {
-                            locationManager.requestLocationUpdates(
-                                    LocationManager.GPS_PROVIDER,
-                                    MIN_TIME_BW_UPDATES,
-                                    MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                            Log.d("GPS Enabled", "GPS Enabled");
-                            if (locationManager != null) {
-                                location = locationManager
-                                        .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                                if (location != null) {
-                                    latitude = location.getLatitude();
-                                    shortLoc.setLatitude(latitude);
-                                    longitude = location.getLongitude();
-                                    shortLoc.setLongitude(longitude);
-
-                                }
-                            }
-                        } catch (SecurityException e){
-                            Log.e("GPS isGPSEnabled  ",e.getMessage().toString() );
-
-                            e.printStackTrace();
-                        }
-                    }
+                    gpsProvider(callback);
                 }
+
             }
 
         } catch (Exception e) {
-            Log.e("GPS error  ",e.getMessage().toString() );
+            Log.e("GPS",e.getMessage().toString() );
             e.printStackTrace();
         }
 
-        return shortLoc;
+    }
+
+
+
+    public void passiveProvider(LocationCallBack callback){
+        try {
+            locationManager.requestLocationUpdates(
+                    LocationManager.PASSIVE_PROVIDER,
+                    MIN_TIME_BW_UPDATES,
+                    MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+            Log.d("GPS", "Passive");
+            if (locationManager != null) {
+                location = locationManager
+                        .getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+                if (location != null) {
+                    latitude = location.getLatitude();
+                    shortLoc.setLatitude(latitude);
+                    longitude = location.getLongitude();
+                    shortLoc.setLongitude(longitude);
+                    callback.onSuccess(shortLoc);
+                }
+            }
+        }catch(SecurityException e){
+            Log.e("GPS",e.getMessage().toString() );
+            callback.onFail("Please enable a network.");
+        }
+    }
+
+    public void gpsProvider(LocationCallBack callback){
+        if (location == null) {
+            try {
+                locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        MIN_TIME_BW_UPDATES,
+                        MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                Log.d("GPS", "GPS Enabled");
+                if (locationManager != null) {
+                    location = locationManager
+                            .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    if (location != null) {
+                        latitude = location.getLatitude();
+                        shortLoc.setLatitude(latitude);
+                        longitude = location.getLongitude();
+                        shortLoc.setLongitude(longitude);
+                        callback.onSuccess(shortLoc);
+                    }
+                }
+            } catch (SecurityException e){
+                Log.e("GPS",e.getMessage().toString() );
+                callback.onFail("Please grant GPS permission.");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void networkProvider(LocationCallBack callback){
+        try {
+            locationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER,
+                    MIN_TIME_BW_UPDATES,
+                    MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+            Log.d("GPS", "Network");
+            if (locationManager != null) {
+                location = locationManager
+                        .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                if (location != null) {
+                    latitude = location.getLatitude();
+                    shortLoc.setLatitude(latitude);
+                    longitude = location.getLongitude();
+                    shortLoc.setLongitude(longitude);
+                    callback.onSuccess(shortLoc);
+                }
+            }
+        }catch(SecurityException e){
+            Log.e("GPS",e.getMessage().toString() );
+            callback.onFail("Please enable a network.");
+        }
     }
 
     /**
@@ -141,8 +185,8 @@ public final class LocationService extends Service implements LocationListener {
         }
     }
 
-     /**
-      * Function to get latitude
+    /**
+     * Function to get latitude
      **/
     public double getLatitude(){
         if(location != null){
@@ -182,11 +226,11 @@ public final class LocationService extends Service implements LocationListener {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
 
         // Setting Dialog Title
-        alertDialog.setTitle("GPS is settings");
+        alertDialog.setTitle("No location");
 
         // Setting Dialog Message
         alertDialog
-                .setMessage("GPS is not enabled. Do you want to go to settings menu?");
+                .setMessage("Please enable network or GPS");
 
         // On pressing Settings button
         alertDialog.setPositiveButton("Settings",
@@ -230,4 +274,10 @@ public final class LocationService extends Service implements LocationListener {
     public IBinder onBind(Intent arg0) {
         return null;
     }
+
+    public interface LocationCallBack{
+        void onSuccess(Location location);
+        void onFail(String msg);
+    }
+
 }

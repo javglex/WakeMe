@@ -1,8 +1,6 @@
 package com.javgon.wakeme.Fragments;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.ProgressDialog;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -33,6 +32,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.javgon.wakeme.Activities.BaseActivity;
 import com.javgon.wakeme.Activities.MainActivity;
 import com.javgon.wakeme.R;
@@ -53,10 +53,10 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
     private static final int RC_SIGN_IN = 9001;
     private Button btnSignIn,btnCreateAccnt, btnNewUser,btnExistingAccnt;
     private SignInButton googleSignInButton;
-    private EditText etEmail,etPassword;
+    private EditText etEmail,etPassword, etFirstName;
+    private TextView tvFirstName;
     private ImageView imgLogo;
-    private String mEmail;
-    private String mPassword;
+    private String mEmail,mPassword,mFirstName;
 
     public static AuthUserFragment newInstance(){
 
@@ -77,14 +77,18 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         View rootView = inflater.inflate(R.layout.frag_auth_user, container, false);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+//        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
 
         btnSignIn=(Button) rootView.findViewById(R.id.btn_sign_in);
         btnNewUser=(Button) rootView.findViewById(R.id.btn_new_user);
         btnExistingAccnt=(Button)rootView.findViewById(R.id.btn_existing_account);
         btnCreateAccnt=(Button) rootView.findViewById(R.id.btn_create_account);
         etEmail=(EditText)rootView.findViewById(R.id.et_email);
+        etFirstName=(EditText) rootView.findViewById(R.id.et_first_name);
         etPassword=(EditText) rootView.findViewById(R.id.et_password);
+        etFirstName.setVisibility(View.GONE);
+        tvFirstName=(TextView) rootView.findViewById(R.id.tv_first_name);
+        tvFirstName.setVisibility(View.GONE);
         imgLogo=(ImageView) rootView.findViewById(R.id.img_logo);
         googleSignInButton = (SignInButton)rootView.findViewById(R.id.google_sign_in_button);
         // Set the dimensions of the sign-in button.
@@ -127,6 +131,8 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
                 btnExistingAccnt.setVisibility(View.VISIBLE);
                 btnSignIn.setVisibility(View.INVISIBLE);
                 btnNewUser.setVisibility(View.INVISIBLE);
+                etFirstName.setVisibility(View.VISIBLE);
+                tvFirstName.setVisibility(View.VISIBLE);
                 break;
             case R.id.btn_sign_in:
                 authSignIn();
@@ -139,7 +145,8 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
                 btnExistingAccnt.setVisibility(View.INVISIBLE);
                 btnSignIn.setVisibility(View.VISIBLE);
                 btnNewUser.setVisibility(View.VISIBLE);
-
+                etFirstName.setVisibility(View.GONE);
+                tvFirstName.setVisibility(View.GONE);
                 break;
             case R.id.google_sign_in_button:
                 AuthSignInGoogle();
@@ -185,18 +192,16 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
     public void authSignIn(){
 
         mEmail=etEmail.getText().toString();
-        mPassword=etEmail.getText().toString();
+        mPassword=etPassword.getText().toString();
         try {
             mAuth.signInWithEmailAndPassword(mEmail, mPassword)
                     .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
-                            // If sign in succesfull
+
                             closeFragment();
-                            // If sign in fails, display a message to the user. If sign in succeeds
-                            // the auth state listener will be notified and logic to handle the
-                            // signed in user can be handled in the listener.
+
                             if (!task.isSuccessful()) {
                                 Log.w(TAG, "signInWithEmail:failed", task.getException());
                                 Toast.makeText(getActivity(), task.getException().getMessage().toString(),
@@ -228,22 +233,31 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
     public void authCreateUser(){
 
         mEmail=etEmail.getText().toString();
-        mPassword=etEmail.getText().toString();
+        mPassword=etPassword.getText().toString();
+        mFirstName=etFirstName.getText().toString();
         try {
             mAuth.createUserWithEmailAndPassword(mEmail, mPassword)
                     .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
-                            // If sign in succesfull
-                            closeFragment();
 
-                            // If sign in fails, display a message to the user. If sign in succeeds
-                            // the auth state listener will be notified and logic to handle the
-                            // signed in user can be handled in the listener.
+
                             if (!task.isSuccessful()) {
                                 Toast.makeText(getActivity(), task.getException().getMessage().toString(),
                                         Toast.LENGTH_SHORT).show();
+                            }else {
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                Log.d("FIREBASE", user.getEmail() + " " + mFirstName);
+                                if (user != null) {
+                                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                            .setDisplayName(mFirstName).build();
+                                    user.updateProfile(profileUpdates);
+                                }
+                                ((MainActivity)getActivity()).setName(mFirstName);
+                                closeFragment();
+
+
                             }
 
                         }

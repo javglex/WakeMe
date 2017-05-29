@@ -44,14 +44,18 @@ class WorldMapSurfaceView extends SurfaceView implements Runnable{
         Point screenSize = new Point();
         display.getSize(screenSize);
         surfaceHolder = getHolder();
-        int layoutWidth=ViewGroup.LayoutParams.MATCH_PARENT;
+
+        /*int layoutWidth=ViewGroup.LayoutParams.MATCH_PARENT;
         int layoutHeight=ViewGroup.LayoutParams.MATCH_PARENT;
-        surfaceHolder.setFixedSize(layoutWidth,layoutHeight);
+        surfaceHolder.setFixedSize(layoutWidth,layoutHeight);*/
+
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         //bitmapOptions.inJustDecodeBounds = true; //gets size of image without creating image and adding memory overhead
         bitmapOptions.inScaled = false; //prevents drawing low resolution bitmap
         map = BitmapFactory.decodeResource(getResources(), R.mipmap.worldmapl,bitmapOptions);
         float ratio= (float)(bitmapOptions.outHeight)/bitmapOptions.outWidth; //to keep image scaled correctly
+        surfaceHolder.setFixedSize((int)(screenSize.x),(int)(screenSize.x*ratio));
+
         map = Bitmap.createScaledBitmap(map, (int)(screenSize.x) , (int)(screenSize.x*ratio) , true);
         pinpoint=BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round);
         pinpoint= Bitmap.createScaledBitmap(pinpoint, 80 , 80 , true);
@@ -101,7 +105,7 @@ class WorldMapSurfaceView extends SurfaceView implements Runnable{
                 canvas.drawColor(Color.BLACK);
                 canvas.drawBitmap(map, 0, 0, null);
                 for (LCoordinates location : locations){
-                    Log.d("worldmap location", location.toString());
+                    //Log.d("worldmap location", location.toString());
                     int convertLatitude=(int)(location.getLatitude())+180;
                     int convertLongitutde=(int)(location.getLongitude())+90;
                     canvas.drawBitmap(pinpoint,convertLatitude,convertLongitutde,null);

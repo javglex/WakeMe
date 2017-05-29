@@ -1,5 +1,6 @@
 package com.javgon.wakeme.Model;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
@@ -29,12 +30,12 @@ public class PostServices {
     private final String READTAG="READPOST";
     private LCoordinates  mLoc = new LCoordinates();
     private static Context mContext;
-
+    private MyUserData mUserData;
 
     private PostServices(Context context) {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         this.mContext = context;
-
+        mUserData=mUserData.getInstance((Activity)context);
     }
 
     public static PostServices getInstance(Context context) {
@@ -42,22 +43,6 @@ public class PostServices {
             postServices = new PostServices(context);
         }
         return postServices;
-    }
-
-
-    public  void writeUser(String userId, String name, String email) {
-        LCoordinates loc = new LCoordinates();
-        User user = new User(name, email, loc,userId);
-        try {
-            mDatabase.child("users").child(userId).setValue(user);
-        } catch ( Exception e){
-            Log.e("writenewuser", e.getMessage().toString());
-        }
-    }
-
-    public void writeUser(String userId, String name, String email, String location) {
-        User user = new User(name, email, new LCoordinates(),userId);
-        mDatabase.child("users").child(userId).setValue(user);
     }
 
 
@@ -78,7 +63,7 @@ public class PostServices {
      */
     public void writeAlarm(Alarm alarm){
         try{
-            String uid=MyUserData.getInstance().getUserID();
+            String uid=mUserData.getUserID();
             mDatabase.child("alarms").child(uid+alarm.getAlarmID()).setValue(alarm);
         } catch ( Exception e){
             Log.e("writeAlarm", e.getMessage().toString());
@@ -88,11 +73,11 @@ public class PostServices {
     public void deleteAlarm(int alarmId){
 
         try{
-            String uid=MyUserData.getInstance().getUserID();
+            String uid=mUserData.getUserID();
             mDatabase.child("alarms").child(uid+alarmId).removeValue();
-            for (int i=0; i<MyUserData.getInstance().getAlarmSize(); i++)   //fix alarm list so that everything is in order again (no holes)
+            for (int i=0; i<mUserData.getAlarmSize(); i++)   //fix alarm list so that everything is in order again (no holes)
             {
-                Alarm alarm=MyUserData.getInstance().getAlarm(i);
+                Alarm alarm=mUserData.getAlarm(i);
                 writeAlarm(alarm);
             }
         } catch ( Exception e){
@@ -107,9 +92,9 @@ public class PostServices {
      */
     public void readOwnAlarms( final AlarmCallback callback ) {
         DatabaseReference ref = mDatabase.child("alarms");
-        String uid = MyUserData.getInstance().getUserID();
+        String uid =mUserData.getUserID();
         //get alarms that belong to user
-        Log.d(READTAG,"got in function, uid: "+MyUserData.getInstance().getUserID());
+        Log.d(READTAG,"got in function, uid: "+mUserData.getUserID());
 
         ref.orderByKey().startAt(uid)
                 .endAt(uid+"\uf8ff").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -156,7 +141,7 @@ public class PostServices {
     public void readAlarms(final AlarmCallback callback){
         DatabaseReference ref = mDatabase.child("alarms");
         //get alarms that are about to ring, limit to first 3
-        ref.orderByChild("hoursUntilAlarm").startAt(0).limitToFirst(5).addListenerForSingleValueEvent(new ValueEventListener() {
+        ref.orderByChild("hoursUntilAlarm").startAt(0).limitToFirst(50).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 try {
@@ -164,20 +149,25 @@ public class PostServices {
                     for (DataSnapshot postSnapshot: snapshot.getChildren()) {
                         Alarm alarm = new Alarm();
                         alarm.setUserID(postSnapshot.child("userID").getValue(String.class));
+                        Log.d(READTAG," in readother users alarms : "+alarm.getUserID());
                         alarm.setAlarmID(postSnapshot.child("alarmID").getValue(int.class));
+                        Log.d(READTAG," in readother users alarms : "+alarm.getAlarmID());
                         alarm.setAlarmTimeHours(postSnapshot.child("alarmTimeHours").getValue(int.class));
+                        Log.d(READTAG," in readother users alarms : "+alarm.getAlarmID());
                         alarm.setAlarmTimeMinutes(postSnapshot.child("alarmTimeMinutes").getValue(int.class));
+                        Log.d(READTAG," in readother users alarms : "+alarm.getAlarmTimeMinutes());
                         alarm.setHoursUntilAlarm(postSnapshot.child("hoursUntilAlarm").getValue(int.class));
+                        Log.d(READTAG," in readother users alarms : "+alarm.getHoursUntilAlarm());
                         GenericTypeIndicator<ArrayList<Integer>> genericTypeIndicator =new GenericTypeIndicator<ArrayList<Integer>>(){};
                         alarm.setRepeatDays(postSnapshot.child("repeatDays").getValue(genericTypeIndicator));
-                        Log.d(READTAG," in readother users alarms : "+alarm.getUserID());
+                        Log.d(READTAG," in readother users alarms : "+alarm.getRepeatDays());
 
                         alarms.add(alarm);
                     }
                     callback.onSuccess(alarms);
 
                 } catch ( Exception e){
-                    Log.e(READTAG, e.toString());
+                    Log.e(READTAG, "read alarms "+e.toString());
                     callback.onFail(e.getMessage());
                 }
             }
@@ -240,6 +230,7 @@ public class PostServices {
 
         final ArrayList<LCoordinates> locations = new ArrayList<>();
         DatabaseReference ref = mDatabase.child("users");
+        boolean success=false;
 
         for (Alarm alarm: alarms){
             Log.d(READTAG, "in get alarm location :  "+ alarm.getUserID().toString());
@@ -270,21 +261,24 @@ public class PostServices {
     }
 
     public void getUserInfoFromAlarm(ArrayList<Alarm> alarms, final UsersCallBack callback){
-        final ArrayList<User> users = new ArrayList<>();
+        final ArrayList<UserSlot> users = new ArrayList<>();
         DatabaseReference ref = mDatabase.child("users");
+        Log.d(READTAG, "in get user info :  "+ alarms.size());
 
-        for (Alarm alarm: alarms){
-            Log.d(READTAG, "in get user info :  "+ alarm.getUserID().toString());
+        for (final Alarm alarm: alarms){
+            Log.d(READTAG, "in for loo[p :  "+ alarm.getUserID().toString());
             ref.child(alarm.getUserID()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot snapshot) {
                     try {
-                        User user = new User();
+                        UserSlot user = new UserSlot();
                         user.setEmail(snapshot.child("email").getValue(String.class));
-                        user.setLCoordinates(snapshot.child("lcoordinates").getValue(LCoordinates.class));
+                        user.setlCoordinates(snapshot.child("lcoordinates").getValue(LCoordinates.class));
                         user.setUsername(snapshot.child("username").getValue(String.class));
-                        user.setUid(snapshot.child("uid").getValue(String.class));
-                        Log.d(READTAG, user.getLCoordinates().toString());
+                        user.setuID(snapshot.child("uid").getValue(String.class));
+                        user.setHoursUntilAlarm(alarm.getHoursUntilAlarm());
+                        user.setProfilePic(snapshot.child("profilePic").getValue(String.class));
+                        Log.d(READTAG, user.getlCoordinates().toString());
 
                         users.add(user);
                         callback.onSuccess(users);
@@ -320,7 +314,7 @@ public class PostServices {
     }
 
     public interface UsersCallBack{
-        void onSuccess(ArrayList<User> users);
+        void onSuccess(ArrayList<UserSlot> users);
         void onFail(String msg);
     }
 

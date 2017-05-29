@@ -1,6 +1,7 @@
 package com.javgon.wakeme.Fragments;
 
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -14,7 +15,6 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.google.android.gms.vision.text.Text;
 import com.javgon.wakeme.Model.Alarm;
 import com.javgon.wakeme.Model.JTime;
 import com.javgon.wakeme.Model.PostServices;
@@ -33,10 +33,12 @@ import java.util.Set;
 
 public class AlarmClockFragment extends BaseFragment implements View.OnClickListener, NumberPicker.OnValueChangeListener, ToggleButton.OnCheckedChangeListener{
 
+    MyUserData mUserData;
     View mRootView;
     TextView tvHour,tvMinute, tvAmPm;
     Button btnSave, btnDelete;
-    LinearLayout editClockLayout, clockLayoutClickable,clockLayout;
+    LinearLayout clockLayoutClickable,clockLayout;
+    ConstraintLayout editClockLayout;
     NumberPicker npHours, npMinutes;
     ToggleButton tbMon, tbTues, tbWed, tbThur, tbFri, tbSat, tbSun, tbAmPm;
     int alarmHour, alarmMinute;
@@ -61,10 +63,11 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        mUserData=mUserData.getInstance(getActivity());
         alarmHour=getArguments().getInt("alarmHour");
         alarmMinute=getArguments().getInt("alarmMinute");
         alarmDays=getArguments().getIntegerArrayList("alarmDays");
-        userId=getArguments().getString("userId");
+        userId=mUserData.getUserID();
         alarmId=getArguments().getInt("alarmId");
     }
 
@@ -73,7 +76,7 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
         super.onCreate(savedInstanceState);
         View rootView = inflater.inflate(R.layout.frag_alarm_clock, container, false);
         mRootView=rootView;
-        Log.d("ALARMCLOCK",""+MyUserData.getInstance().getAlarmSize());
+        Log.d("ALARMCLOCK",""+mUserData.getAlarmSize());
         return rootView;
     }
 
@@ -104,14 +107,14 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
         //clickable area of clock that expands/contracts edit view
         clockLayoutClickable= (LinearLayout)view.findViewById(R.id.layout_clock_clickable);
         //the edit part of the alarm clock
-        editClockLayout=(LinearLayout) clockLayout.findViewById(R.id.layout_edit_clock);
+        editClockLayout=(ConstraintLayout) clockLayout.findViewById(R.id.layout_edit_clock);
         //number pickers for editing alarm time
         npHours=(NumberPicker) clockLayout.findViewById(R.id.np_hours);
         npMinutes= (NumberPicker) clockLayout.findViewById(R.id.np_minutes);
 
         clockLayoutClickable.setOnClickListener(this);
 
-        if (MyUserData.getInstance().getAlarmSize()!=0)  //if the user has alarms set
+        if (mUserData.getAlarmSize()!=0)  //if the user has alarms set
             editClockLayout.setVisibility(View.GONE);       //do not show edit alarm view
         else editClockLayout.setVisibility(View.VISIBLE);   //else show edit alarm view as soon as user adds alarm
 
@@ -153,7 +156,7 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
             case R.id.layout_clock_clickable:
                 if (editClockLayout.getVisibility()==View.GONE) {
                     editClockLayout.setVisibility(View.VISIBLE);
-                    editClockLayout.requestFocus();  //center in scrollview
+                    btnSave.getParent().requestChildFocus(btnSave,btnSave);  //focus in scrollview
                 }
                 else {
                     editClockLayout.setVisibility(View.GONE);
@@ -245,7 +248,7 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
         alarmDays=new ArrayList<Integer>(new LinkedHashSet<Integer>(alarmDays));
         alarm.setRepeatDays(alarmDays);
 
-        MyUserData.getInstance().setAlarm(alarm, alarmId);
+        mUserData.setAlarm(alarm, alarmId);
         PostServices.getInstance(getActivity()).writeAlarm(alarm);
 
         editClockLayout.setVisibility(View.GONE);
@@ -255,12 +258,12 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
 
         LinearLayout myActivityView=(LinearLayout)getActivity().findViewById(R.id.layout_alarm_clocks);
         myActivityView.removeView(myActivityView.findViewById(getId()));
-        Log.d("ALARMCLOCK","before delete "+MyUserData.getInstance().getAlarmSize()+ " alarm num: "+alarmId);
-        MyUserData.getInstance().deleteAlarm(alarmId);
-        Log.d("ALARMCLOCK","after delete "+MyUserData.getInstance().getAlarmSize()+ " alarm num: "+alarmId);
-        Log.d("ALARMCLOCK",MyUserData.getInstance().toString());
+        Log.d("ALARMCLOCK","before delete "+mUserData.getAlarmSize()+ " alarm num: "+alarmId);
+        mUserData.deleteAlarm(alarmId);
+        Log.d("ALARMCLOCK","after delete "+mUserData.getAlarmSize()+ " alarm num: "+alarmId);
+        Log.d("ALARMCLOCK",mUserData.toString());
         PostServices.getInstance(getActivity()).deleteAlarm(alarmId);
-        getActivity().getFragmentManager().beginTransaction().remove(this).commit();
+        getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
 
     }
 

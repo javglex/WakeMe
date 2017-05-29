@@ -14,12 +14,44 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        android:layout_gravity="bottom"
+        android:orientation="horizontal">
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="false"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="false"
+            android:layout_marginLeft="@dimen/fabs_side_margin"
+            android:layout_marginTop="@dimen/fabs_top_margin"
+            android:clickable="true"
+            app:fabSize="mini"
+            app:srcCompat="?attr/homeAsUpIndicator" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/fabs_vertical_margin"
+            app:srcCompat="@android:drawable/ic_dialog_email" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="@dimen/fabs_side_margin"
+            android:layout_marginTop="@dimen/fabs_top_margin"
+            android:clickable="true"
+            app:fabSize="mini"
+            app:srcCompat="@drawable/ic_mr_button_connected_05_light" />
+
+    </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>
