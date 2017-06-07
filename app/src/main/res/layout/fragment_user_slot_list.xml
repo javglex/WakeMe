@@ -5,8 +5,9 @@
     android:id="@+id/swipeContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:theme="@style/AppTheme.NoActionBar"
-    android:background="@drawable/background_gradient">
+    android:background="@drawable/background_gradient"
+    android:paddingTop="2dp"
+    app:theme="@style/AppTheme.NoActionBar">
 
 
     <LinearLayout

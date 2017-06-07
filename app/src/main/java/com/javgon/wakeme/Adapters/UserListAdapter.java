@@ -1,27 +1,31 @@
 package com.javgon.wakeme.Adapters;
 
 import android.app.Activity;
-import android.net.Uri;
+import android.content.Context;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.javgon.wakeme.Fragments.AudioRecordFragment;
 import com.javgon.wakeme.Model.UserSlot;
-import com.javgon.wakeme.Other.CircleTransform;
 import com.javgon.wakeme.R;
 
 import java.util.List;
 
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
+import jp.wasabeef.glide.transformations.CropSquareTransformation;
+import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
 /**
  * Created by javier gonzalez on 5/22/2017.
@@ -30,11 +34,12 @@ import jp.wasabeef.glide.transformations.CropCircleTransformation;
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.MyViewHolder> {
 
     private List<UserSlot> list;
+    private Context mContext;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView tvName, tvHoursUntil, tvLocation;
         public ConstraintLayout linearInfo;
-        public Button btnSendMessage;
+        public ImageButton btnSendMessage;
         public ImageView imgProfilePic;
 
         public MyViewHolder(View view) {
@@ -43,14 +48,15 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.MyView
             tvHoursUntil = (TextView) view.findViewById(R.id.tv_timeUntilAlarm);
             tvLocation = (TextView) view.findViewById(R.id.tv_location);
             linearInfo = (ConstraintLayout) view.findViewById(R.id.layout_user_slot);
-            btnSendMessage = (Button) view.findViewById(R.id.btn_send_alarm);
+            btnSendMessage = (ImageButton) view.findViewById(R.id.btn_send_alarm);
             imgProfilePic = (ImageView) view.findViewById(R.id.img_profile_pic);
         }
     }
 
 
-    public UserListAdapter(List<UserSlot> list) {
+    public UserListAdapter(List<UserSlot> list, Context context) {
         this.list = list;
+        mContext=context;
     }
 
     @Override
@@ -71,6 +77,10 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.MyView
             @Override
             public void onClick(View view){
                 Log.d("VIEWHOLDER", "CLICKED SEND ON " + holder.getAdapterPosition());
+                String opponentUserId=list.get(holder.getAdapterPosition()).getuID();
+                FragmentManager manager = ((FragmentActivity)mContext).getSupportFragmentManager();
+                AudioRecordFragment recDialog = AudioRecordFragment.newInstance(opponentUserId);
+                recDialog.show(manager,"RecordDialog");
             }
         }));
 
@@ -82,7 +92,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.MyView
     public void onBindViewHolder(MyViewHolder holder, final int position) {
 
         UserSlot userSlot = list.get(position);
-        holder.tvHoursUntil.setText(userSlot.getHoursUntilAlarm() + " hours until alarm rings");
+        holder.tvHoursUntil.setText(userSlot.getHoursUntilAlarm() + " hours until alarm");
         holder.tvLocation.setText(userSlot.getlCoordinates().toString());
         holder.tvName.setText(userSlot.getUsername());
         // Loading profile image

@@ -1,12 +1,10 @@
 package com.javgon.wakeme.Fragments;
 
 import android.animation.LayoutTransition;
+import android.content.Intent;
 import android.os.Bundle;
-import android.provider.AlarmClock;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -14,18 +12,14 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.javgon.wakeme.Activities.MainActivity;
-import com.javgon.wakeme.Activities.NavigationPage;
 import com.javgon.wakeme.Model.Alarm;
-import com.javgon.wakeme.Model.JTime;
 import com.javgon.wakeme.Model.LCoordinates;
-import com.javgon.wakeme.Model.PostServices;
-import com.javgon.wakeme.Other.MyUserData;
+import com.javgon.wakeme.Services.AlarmService;
+import com.javgon.wakeme.Services.DatabaseServices;
+import com.javgon.wakeme.Model.MyUserData;
 import com.javgon.wakeme.R;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by javier gonzalez on 4/26/2017.
@@ -54,6 +48,13 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
         mUserData=mUserData.getInstance(getActivity());
         readOwnAlarms();
         readAlarms();
+        addAlarmService();
+    }
+
+    public void addAlarmService(){
+
+        Intent intent= AlarmService.newIntent(getActivity());
+        getActivity().startService(intent);
 
     }
 
@@ -100,9 +101,9 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
      */
     @Override
     protected void getAlarmLocations(ArrayList<Alarm> alarms){
-        PostServices post = PostServices.getInstance(getActivity());
+        DatabaseServices post = DatabaseServices.getInstance(getActivity());
         showProgressDialog();
-        post.getUserLocationFromAlarm(alarms,new PostServices.AlarmLocationCallBack(){
+        post.getUserLocationFromAlarm(alarms,new DatabaseServices.AlarmLocationCallBack(){
             @Override
             public void onSuccess(ArrayList<LCoordinates> locations){
                 hideProgressDialog();
@@ -124,8 +125,8 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
      * Read alarms set by user (may have set more than one)
      */
     private void readOwnAlarms(){
-        PostServices post = PostServices.getInstance(getActivity());
-        post.readOwnAlarms(new PostServices.AlarmCallback(){
+        DatabaseServices post = DatabaseServices.getInstance(getActivity());
+        post.readOwnAlarms(new DatabaseServices.AlarmCallback(){
             @Override
             public void onSuccess(ArrayList<Alarm> alarms){
                 mUserData.setAlarmList(alarms);
@@ -184,7 +185,7 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.layout_add_alarm:
-                PostServices post = PostServices.getInstance(getActivity());
+                DatabaseServices post = DatabaseServices.getInstance(getActivity());
                 String uid=mUserData.getUserID();
                 int alarmId=mUserData.getAvailableID();
                 Alarm alarm = new Alarm(uid,alarmId,12,00);

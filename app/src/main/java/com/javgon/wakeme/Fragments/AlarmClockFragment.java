@@ -4,10 +4,8 @@ import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -16,15 +14,12 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.javgon.wakeme.Model.Alarm;
-import com.javgon.wakeme.Model.JTime;
-import com.javgon.wakeme.Model.PostServices;
-import com.javgon.wakeme.Other.MyUserData;
+import com.javgon.wakeme.Services.DatabaseServices;
+import com.javgon.wakeme.Model.MyUserData;
 import com.javgon.wakeme.R;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Created by javier gonzalez on 4/27/2017.
@@ -249,7 +244,7 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
         alarm.setRepeatDays(alarmDays);
 
         mUserData.setAlarm(alarm, alarmId);
-        PostServices.getInstance(getActivity()).writeAlarm(alarm);
+        DatabaseServices.getInstance(getActivity()).writeAlarm(alarm);
 
         editClockLayout.setVisibility(View.GONE);
     }
@@ -262,7 +257,7 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
         mUserData.deleteAlarm(alarmId);
         Log.d("ALARMCLOCK","after delete "+mUserData.getAlarmSize()+ " alarm num: "+alarmId);
         Log.d("ALARMCLOCK",mUserData.toString());
-        PostServices.getInstance(getActivity()).deleteAlarm(alarmId);
+        DatabaseServices.getInstance(getActivity()).deleteAlarm(alarmId);
         getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
 
     }

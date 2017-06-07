@@ -1,22 +1,14 @@
-package com.javgon.wakeme.Other;
+package com.javgon.wakeme.Model;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import com.javgon.wakeme.Model.Alarm;
-import com.javgon.wakeme.Model.LCoordinates;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.lang.reflect.Type;
@@ -24,8 +16,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by javier gonzalez on 5/2/2017.

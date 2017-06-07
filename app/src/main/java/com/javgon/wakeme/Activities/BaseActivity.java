@@ -2,9 +2,11 @@ package com.javgon.wakeme.Activities;
 
 
 import android.app.ProgressDialog;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -34,9 +36,11 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
-    public void showSnack(String mssg){
-        Toast.makeText(this,mssg,
-                Toast.LENGTH_SHORT).show();
+    public void showSnack(String msg){
+        Snackbar.make(findViewById(android.R.id.content), msg, Snackbar.LENGTH_LONG)
+                .setAction("OK", null)
+                .setActionTextColor(Color.RED)
+                .show();
     }
 
 

@@ -1,4 +1,4 @@
-package com.javgon.wakeme.Other;
+package com.javgon.wakeme.Tools;
 
 import android.app.Activity;
 import android.content.res.Resources;

@@ -1,8 +1,7 @@
-package com.javgon.wakeme.Other;
+package com.javgon.wakeme.Services;
 
 import android.app.AlertDialog;
 import android.app.Service;
-import android.app.admin.SecurityLog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,8 +13,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
-
-import com.javgon.wakeme.Model.LCoordinates;
 
 
 /**

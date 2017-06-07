@@ -8,9 +8,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.javgon.wakeme.Model.Alarm;
-import com.javgon.wakeme.Model.LCoordinates;
-import com.javgon.wakeme.Model.PostServices;
-import com.javgon.wakeme.Other.MyUserData;
+import com.javgon.wakeme.Services.DatabaseServices;
+import com.javgon.wakeme.Model.MyUserData;
 import com.javgon.wakeme.R;
 
 import java.util.ArrayList;
@@ -53,8 +52,8 @@ public class BaseFragment extends Fragment {
      * Read alarms set by other users world wide
      */
     protected void readAlarms(){
-        PostServices post = PostServices.getInstance(getActivity());
-        post.readAlarms(new PostServices.AlarmCallback(){
+        DatabaseServices post = DatabaseServices.getInstance(getActivity());
+        post.readAlarms(new DatabaseServices.AlarmCallback(){
             @Override
             public void onSuccess(ArrayList<Alarm> alarms){
                 mUserData.setOthersAlarmList(alarms);

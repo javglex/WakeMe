@@ -1,9 +1,7 @@
 package com.javgon.wakeme.Fragments;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,20 +9,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.javgon.wakeme.Adapters.UserListAdapter;
 import com.javgon.wakeme.Model.Alarm;
-import com.javgon.wakeme.Model.PostServices;
+import com.javgon.wakeme.Services.DatabaseServices;
 import com.javgon.wakeme.Model.UserSlot;
-import com.javgon.wakeme.Other.MyUserData;
-import com.javgon.wakeme.Other.ScreenUtils;
+import com.javgon.wakeme.Model.MyUserData;
 import com.javgon.wakeme.R;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +66,7 @@ public class UserListFragment extends BaseFragment implements SwipeRefreshLayout
         recyclerView = (RecyclerView)view.findViewById(R.id.slot_recycler_view);
         btnRefresh=(Button) view.findViewById(R.id.btn_refresh);
         btnRefresh.setVisibility(View.GONE);  //if succeed, hide refresh button
-        mAdapter = new UserListAdapter(userList);
+        mAdapter = new UserListAdapter(userList,getActivity());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -81,7 +74,7 @@ public class UserListFragment extends BaseFragment implements SwipeRefreshLayout
         swipeRefreshLayout=(SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setDistanceToTriggerSync(200);// in dips
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {          //refresh only when on top of list
 
             @Override
             public void onScrollStateChanged(RecyclerView view, int scrollState) {
@@ -121,7 +114,7 @@ public class UserListFragment extends BaseFragment implements SwipeRefreshLayout
     protected void getUserSlots(){
 
         ArrayList<Alarm> alarms=mUserData.getOthersAlarm();
-        PostServices.getInstance(getActivity()).getUserInfoFromAlarm(alarms,new PostServices.UsersCallBack(){
+        DatabaseServices.getInstance(getActivity()).getUserInfoFromAlarm(alarms,new DatabaseServices.UsersCallBack(){
             @Override
             public void onSuccess(ArrayList<UserSlot> result){
                 swipeRefreshLayout.setRefreshing(false);

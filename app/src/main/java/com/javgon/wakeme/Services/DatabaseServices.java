@@ -1,48 +1,48 @@
-package com.javgon.wakeme.Model;
+package com.javgon.wakeme.Services;
 
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
-import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
-import com.javgon.wakeme.Activities.MainActivity;
-import com.javgon.wakeme.Other.MyUserData;
+import com.javgon.wakeme.Model.Alarm;
+import com.javgon.wakeme.Model.AudioMessage;
+import com.javgon.wakeme.Model.LCoordinates;
+import com.javgon.wakeme.Model.User;
+import com.javgon.wakeme.Model.UserSlot;
+import com.javgon.wakeme.Model.MyUserData;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Created by javgon on 4/13/2017.
  */
 
-public class PostServices {
-    public static PostServices postServices;
+public class DatabaseServices {
+
+    public static DatabaseServices databaseServices;
     private static DatabaseReference mDatabase;
     private final String READTAG="READPOST";
-    private LCoordinates  mLoc = new LCoordinates();
+    private LCoordinates mLoc = new LCoordinates();
     private static Context mContext;
     private MyUserData mUserData;
 
-    private PostServices(Context context) {
+    private DatabaseServices(Context context) {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         this.mContext = context;
         mUserData=mUserData.getInstance((Activity)context);
     }
 
-    public static PostServices getInstance(Context context) {
-        if (postServices == null) {
-            postServices = new PostServices(context);
+    public static DatabaseServices getInstance(Context context) {
+        if (databaseServices == null) {
+            databaseServices = new DatabaseServices(context);
         }
-        return postServices;
+        return databaseServices;
     }
 
 
@@ -295,6 +295,12 @@ public class PostServices {
 
             });
         }
+    }
+
+    public void sendUserMessage(AudioMessage message){
+
+        mDatabase.child("messages").child(message.getToUserId()).setValue(message);
+
     }
 
 

@@ -2,7 +2,6 @@ package com.javgon.wakeme.Activities;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -13,24 +12,27 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.javgon.wakeme.Model.PostServices;
+import com.javgon.wakeme.Services.DatabaseServices;
 import com.javgon.wakeme.Fragments.AuthUserFragment;
 import com.javgon.wakeme.Model.LCoordinates;
 import com.javgon.wakeme.Model.User;
-import com.javgon.wakeme.Other.DummyData;
-import com.javgon.wakeme.Other.LocationService;
-import com.javgon.wakeme.Other.MyUserData;
+import com.javgon.wakeme.Services.LocationService;
+import com.javgon.wakeme.Model.MyUserData;
 import com.javgon.wakeme.R;
 
-import java.net.URI;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.RECORD_AUDIO;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 
 public class MainActivity extends BaseActivity {
 
+    public final int RequestRecordingPermissionCode = 2 ;
+    public final int RequestLocationPermissionCode = 1 ;
     TextView tvWelcome;
     FirebaseUser mUser;
     LocationService mLocService;
-    final PostServices mPost = PostServices.getInstance(this);
+    final DatabaseServices mPost = DatabaseServices.getInstance(this);
     final LCoordinates mLocation = new LCoordinates();
     MyUserData mUserData;
     String mFirstName;
@@ -152,11 +154,10 @@ public class MainActivity extends BaseActivity {
 
         Log.d("MAIN", "grantpermission()");
         //if gps permission is not granted
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (!checkPermission()) {
             Log.d("MAIN", "need permissiom");
             //Request permission
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-
+            requestPermissions();
         }else {
             Log.d("MAIN", "no need for permission");
 
@@ -164,13 +165,26 @@ public class MainActivity extends BaseActivity {
             displayMainNavPage();
         }
     }
+    private void requestPermissions() {
+        requestRecordingPermission();
+        requestLocationPermission();
 
+    }
+
+    private void requestRecordingPermission(){
+        ActivityCompat.requestPermissions(MainActivity.this, new
+                String[]{WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}, RequestRecordingPermissionCode);
+    }
+
+    private void requestLocationPermission(){
+        ActivityCompat.requestPermissions(MainActivity.this, new String[]{ACCESS_FINE_LOCATION}, RequestLocationPermissionCode);
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
 
         switch (requestCode) {
-            case 1:
+            case RequestLocationPermissionCode:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(MainActivity.this,"GPS permission granted",Toast.LENGTH_LONG).show();
 
@@ -178,9 +192,43 @@ public class MainActivity extends BaseActivity {
                     prepUserData();
                     displayMainNavPage();
                 } else {
-                    // show user that permission was denied. inactive the location based feature or force user to close the app
+                    Toast.makeText(MainActivity.this,"Location permission denied",Toast.LENGTH_LONG).show();
                 }
                 break;
+            case RequestRecordingPermissionCode:
+                if (grantResults.length> 0) {
+                    boolean StoragePermission = grantResults[0] ==
+                            PackageManager.PERMISSION_GRANTED;
+                    boolean RecordPermission = grantResults[1] ==
+                            PackageManager.PERMISSION_GRANTED;
+
+                    if (StoragePermission && RecordPermission) {
+                        Toast.makeText(MainActivity.this, "Recording Permission granted",
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainActivity.this,"Recording permission denied",Toast.LENGTH_LONG).show();
+                    }
+                }
+                break;
+
+            default:
+                super.onRequestPermissionsResult(requestCode,permissions,grantResults);
+                break;
         }
+    }
+
+    public boolean checkPermission() {
+        int write = ContextCompat.checkSelfPermission(MainActivity.this,
+                WRITE_EXTERNAL_STORAGE);
+        int record = ContextCompat.checkSelfPermission(MainActivity.this,
+                RECORD_AUDIO);
+        int location=ContextCompat.checkSelfPermission(MainActivity.this,
+                ACCESS_FINE_LOCATION);
+
+        int granted=PackageManager.PERMISSION_GRANTED;
+
+
+        return write == granted&&
+                record == granted && location==granted;
     }
 }

@@ -1,10 +1,7 @@
 package com.javgon.wakeme.Activities;
 
 import android.animation.ArgbEvaluator;
-import android.animation.ValueAnimator;
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
+
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -12,21 +9,16 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
+
+import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.ViewGroup;
 
-import android.widget.TextView;
-import android.widget.Toolbar;
-
+import com.javgon.wakeme.Fragments.AudioRecordFragment;
 import com.javgon.wakeme.Fragments.MainFragment;
 import com.javgon.wakeme.Fragments.UserListFragment;
 import com.javgon.wakeme.R;
 
-public class NavigationPage extends AppCompatActivity implements View.OnClickListener {
+public class NavigationPage extends BaseActivity implements View.OnClickListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -45,7 +37,7 @@ public class NavigationPage extends AppCompatActivity implements View.OnClickLis
     private FloatingActionButton fabLeft,fabCenter,fabRight;
     Integer[] colors = null;
     ArgbEvaluator argbEvaluator = new ArgbEvaluator();
-
+    Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,16 +52,9 @@ public class NavigationPage extends AppCompatActivity implements View.OnClickLis
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(1); //begin in middle
         mViewPager.addOnPageChangeListener(new CustomOnPageChangeListener());
-        //set up floating action bars
-        fabLeft=(FloatingActionButton) findViewById(R.id.fab_left);
-        fabRight=(FloatingActionButton)findViewById(R.id.fab_right);
-        fabCenter= (FloatingActionButton)findViewById(R.id.fab_center);
-
-        fabLeft.setOnClickListener(this);
-        fabCenter.setOnClickListener(this);
-        fabRight.setOnClickListener(this);
 
 
+        initToolbar();
         /*
             background transformation by http://kubaspatny.github.io/2014/09/18/viewpager-background-transition/
          */
@@ -78,18 +63,15 @@ public class NavigationPage extends AppCompatActivity implements View.OnClickLis
 
     }
 
+    private void initToolbar(){
+        mToolbar=(Toolbar) findViewById(R.id.toolbar_nav);
+        mToolbar.setTitle(mSectionsPagerAdapter.getPageTitle(1));
+        setSupportActionBar(mToolbar);
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.fab_left:
-                mViewPager.setCurrentItem(0);
-                break;
-            case R.id.fab_center:
-                mViewPager.setCurrentItem(1);
-                break;
-            case R.id.fab_right:
-                mViewPager.setCurrentItem(2);
-                break;
             default:
                 break;
         }
@@ -98,7 +80,7 @@ public class NavigationPage extends AppCompatActivity implements View.OnClickLis
 
         Integer color1 = ContextCompat.getColor(getApplicationContext(),R.color.colorOrange);
         Integer color2 = ContextCompat.getColor(getApplicationContext(),R.color.colorPrimary);
-        Integer color3 = ContextCompat.getColor(getApplicationContext(),R.color.colorTransparent);
+        Integer color3 = ContextCompat.getColor(getApplicationContext(),R.color.colorPrimaryDark);
 
         Integer[] colors_temp = {color1, color2, color3};
         colors = colors_temp;
@@ -109,18 +91,23 @@ public class NavigationPage extends AppCompatActivity implements View.OnClickLis
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
             if(position < (mSectionsPagerAdapter.getCount() -1) && position < (colors.length - 1)) {
 
-                mViewPager.setBackgroundColor((Integer) argbEvaluator.evaluate(positionOffset, colors[position], colors[position + 1]));
+                int color=(Integer) argbEvaluator.evaluate(positionOffset, colors[position], colors[position + 1]);
 
+                mViewPager.setBackgroundColor(color);
+                mToolbar.setBackgroundColor(color);
             } else {
 
                 // the last page color
-                mViewPager.setBackgroundColor(colors[colors.length - 1]);
+                int lastPageColor=colors[colors.length - 1];
+                mViewPager.setBackgroundColor(lastPageColor);
+                mToolbar.setBackgroundColor(lastPageColor);
 
-            }        }
+            }
+        }
 
         @Override
         public void onPageSelected(int position) {
-
+            mToolbar.setTitle(mSectionsPagerAdapter.getPageTitle(position));
         }
 
         @Override
@@ -168,11 +155,11 @@ public class NavigationPage extends AppCompatActivity implements View.OnClickLis
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "SECTION 1";
+                    return "Users";
                 case 1:
-                    return "SECTION 2";
+                    return "DreamChat";
                 case 2:
-                    return "SECTION 3";
+                    return "Notifications";
             }
             return null;
         }

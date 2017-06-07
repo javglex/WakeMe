@@ -1,16 +1,8 @@
-package com.javgon.wakeme.Other;
+package com.javgon.wakeme.Tools;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
-import android.os.Message;
-import android.util.Log;
-import android.widget.Toast;
-
-import com.javgon.wakeme.Activities.MainActivity;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by javgon on 4/12/2017.

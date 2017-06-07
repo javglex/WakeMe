@@ -1,6 +1,8 @@
 package com.javgon.wakeme.Model;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 /**
  * Created by javgon on 4/18/2017.
@@ -35,7 +37,11 @@ public class LCoordinates implements Serializable {
     }
 
     public String toString(){
-        return this.latitude+ ", "+this.longitude;
+
+        NumberFormat formatter = new DecimalFormat("#0.0");
+        String toString =formatter.format(this.latitude) + ", " + formatter.format(this.longitude);
+
+        return toString;
     }
 
 }
