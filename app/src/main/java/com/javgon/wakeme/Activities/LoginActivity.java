@@ -1,13 +1,11 @@
-package com.javgon.wakeme.Fragments;
-
+package com.javgon.wakeme.Activities;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,19 +27,24 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.javgon.wakeme.Activities.LoginActivity;
+import com.javgon.wakeme.Services.DatabaseServices;
+import com.javgon.wakeme.Model.LCoordinates;
+import com.javgon.wakeme.Model.User;
+import com.javgon.wakeme.Services.LocationService;
+import com.javgon.wakeme.Model.MyUserData;
 import com.javgon.wakeme.R;
 
 
-/**
- * Created by javgon on 4/11/2017.
- */
+public class LoginActivity extends BaseActivity  implements View.OnClickListener,  GoogleApiClient.OnConnectionFailedListener{
 
-public class AuthUserFragment extends BaseFragment implements View.OnClickListener,  GoogleApiClient.OnConnectionFailedListener {
-
+    TextView tvWelcome;
+    FirebaseUser mUser;
+    LocationService mLocService;
+    final DatabaseServices mPost = DatabaseServices.getInstance(this);
+    final LCoordinates mLocation = new LCoordinates();
+    MyUserData mUserData;
     private static final String TAG = "AuthState";
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -54,39 +57,25 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
     private ImageView imgLogo;
     private String mEmail,mPassword,mFirstName;
 
-    public static AuthUserFragment newInstance(){
-
-        AuthUserFragment newFrag = new AuthUserFragment();
-        Bundle args = new Bundle();
-        newFrag.setArguments(args);
-        return newFrag;
-    }
-
 
     @Override
-    public void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.frag_auth_user);
 
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        super.onCreate(savedInstanceState);
-        View rootView = inflater.inflate(R.layout.frag_auth_user, container, false);
-//        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
-
-        btnSignIn=(Button) rootView.findViewById(R.id.btn_sign_in);
-        btnNewUser=(Button) rootView.findViewById(R.id.btn_new_user);
-        btnExistingAccnt=(Button)rootView.findViewById(R.id.btn_existing_account);
-        btnCreateAccnt=(Button) rootView.findViewById(R.id.btn_create_account);
-        etEmail=(EditText)rootView.findViewById(R.id.et_email);
-        etFirstName=(EditText) rootView.findViewById(R.id.et_first_name);
-        etPassword=(EditText) rootView.findViewById(R.id.et_password);
+        btnSignIn=(Button) findViewById(R.id.btn_sign_in);
+        btnNewUser=(Button) findViewById(R.id.btn_new_user);
+        btnExistingAccnt=(Button)findViewById(R.id.btn_existing_account);
+        btnCreateAccnt=(Button) findViewById(R.id.btn_create_account);
+        etEmail=(EditText)findViewById(R.id.et_email);
+        etFirstName=(EditText) findViewById(R.id.et_first_name);
+        etPassword=(EditText)findViewById(R.id.et_password);
         etFirstName.setVisibility(View.GONE);
-        tvFirstName=(TextView) rootView.findViewById(R.id.tv_first_name);
+        tvFirstName=(TextView) findViewById(R.id.tv_first_name);
         tvFirstName.setVisibility(View.GONE);
-        imgLogo=(ImageView) rootView.findViewById(R.id.img_logo);
-        googleSignInButton = (SignInButton)rootView.findViewById(R.id.google_sign_in_button);
+        imgLogo=(ImageView) findViewById(R.id.img_logo);
+        googleSignInButton = (SignInButton)findViewById(R.id.google_sign_in_button);
         // Set the dimensions of the sign-in button.
         googleSignInButton.setSize(SignInButton.SIZE_STANDARD);
 
@@ -98,7 +87,100 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
 
         authCreateInstances();
 
-        return rootView;
+        mUserData = mUserData.getInstance(this);
+        CheckUser();
+
+    }
+
+
+    public void CheckUser(){
+        mUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (mUser != null) {
+            prepUserData();
+            launchMainNavPage();
+        }
+    }
+
+
+    /**
+     * Sets user data in a signleton class for easier access from other classes
+     */
+    public void prepUserData(){
+        // Name, email address, and profile photo Url
+        String email = mUser.getEmail();
+        String uid = mUser.getUid();
+        String profilePic ="";
+        String name="";
+        if (mUser.getPhotoUrl()!=null)
+             profilePic = mUser.getPhotoUrl().toString();
+        if (mUser.getDisplayName()!=null)       //if user did not sign up with google
+            name = mUser.getDisplayName();
+        else name=mFirstName;           //get name provided by user in editbox
+
+        User user =new User(name,email,mLocation, uid, profilePic);
+        mPost.writeUser(user);      //save to db
+        mUserData.setUserData(user);        //store locally
+
+        //set user location
+        getUserLocation();
+    }
+
+
+    /**
+     * Essentially the main screen of the application.
+     */
+    private void launchMainNavPage(){
+
+        Intent myIntent = new Intent(LoginActivity.this, NavigationPage.class);
+        LoginActivity.this.startActivity(myIntent);
+
+    }
+
+   public void getUserLocation(){
+       mLocService= new LocationService(this);
+       LocationService.getInstance(this).getLocation(new LocationService.LocationCallBack(){
+               @Override
+               public void onSuccess(Location location){
+                   mLocation.setLatitude(location.getLatitude());
+                   mLocation.setLongitude(location.getLongitude());
+                   mPost.writeUserLocation(mUser.getUid(),mLocation);
+                   mUserData.setLocation(mLocation);
+                   Log.d("gps", "gps: "+mLocation.toString());
+                   mLocService.stopUsingGPS();
+               }
+               @Override
+               public void onFail(String msg){
+                   Log.e("FAIL", "getuserlocation() "+msg);
+                   Toast.makeText(LoginActivity.this, msg,
+                           Toast.LENGTH_SHORT).show();
+               }
+           });
+
+   }
+
+    public void displayUserLocation(LCoordinates loc){
+        String name = mUser.getDisplayName();
+        String email = mUser.getEmail();
+        tvWelcome.setText(name + " " + email + " "  + "\n Location: " + loc.toString());
+
+
+
+    }
+
+    public void setName(String name){
+        mFirstName=name;
+    }
+
+
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+    }
+
+    @Override
+    public void onBackPressed(){
+        exitDialog();
     }
 
     @Override
@@ -115,7 +197,6 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
             mAuth.removeAuthStateListener(mAuthListener);
         }
         mGoogleApiClient.disconnect();
-        ((LoginActivity) getActivity()).CheckUser();
     }
 
 
@@ -160,7 +241,7 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
                 .requestEmail()
                 .build();
 
-        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
                 //.enableAutoManage(this/* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
@@ -191,22 +272,22 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
         mPassword=etPassword.getText().toString();
         try {
             mAuth.signInWithEmailAndPassword(mEmail, mPassword)
-                    .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
 
-                            closeFragment();
+                            CheckUser();
 
                             if (!task.isSuccessful()) {
                                 Log.w(TAG, "signInWithEmail:failed", task.getException());
-                                Toast.makeText(getActivity(), task.getException().getMessage().toString(),
+                                Toast.makeText(getApplicationContext(), task.getException().getMessage().toString(),
                                         Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
         } catch (IllegalArgumentException e){
-            Toast.makeText(getActivity(),"Fields cannot be empty",
+            Toast.makeText(this,"Fields cannot be empty",
                     Toast.LENGTH_SHORT).show();
         }
 
@@ -221,7 +302,7 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(@NonNull Status status) {
-                      //  updateUI(null);
+                        //  updateUI(null);
                     }
                 });
     }
@@ -233,14 +314,14 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
         mFirstName=etFirstName.getText().toString();
         try {
             mAuth.createUserWithEmailAndPassword(mEmail, mPassword)
-                    .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
 
 
                             if (!task.isSuccessful()) {
-                                Toast.makeText(getActivity(), task.getException().getMessage().toString(),
+                                Toast.makeText(getApplicationContext(), task.getException().getMessage().toString(),
                                         Toast.LENGTH_SHORT).show();
                             }else {
                                 FirebaseUser user = mAuth.getCurrentUser();
@@ -250,8 +331,7 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
                                             .setDisplayName(mFirstName).build();
                                     user.updateProfile(profileUpdates);
                                 }
-                                ((LoginActivity)getActivity()).setName(mFirstName);
-                                closeFragment();
+                                CheckUser();
 
 
                             }
@@ -259,7 +339,7 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
                         }
                     });
         } catch (IllegalArgumentException e){
-            Toast.makeText(getActivity(), "Fields cannot be empty",
+            Toast.makeText(this, "Fields cannot be empty",
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -310,19 +390,19 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
                         //if sign in succesfull
-                        closeFragment();
+                        CheckUser();
                         System.out.println(" " + task.getResult().getUser().getDisplayName());
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
                             Log.w(TAG, "signInWithCredential", task.getException());
-                            Toast.makeText(getActivity(), "Authentication failed.",
+                            Toast.makeText(getApplicationContext(), "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }
                         // [START_EXCLUDE]
@@ -337,9 +417,7 @@ public class AuthUserFragment extends BaseFragment implements View.OnClickListen
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
-        Toast.makeText(getActivity(), "Google Play Services error.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
-
-
 
 }

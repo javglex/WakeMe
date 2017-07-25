@@ -3,7 +3,20 @@
     <string name="login_auth_failed">Wrong email or password</string>
     <string name="create_auth_failed">Could not create account at this time</string>
     <string name="loading">Please wait</string>
-    <string name="title_activity_navigation_page">NavigationPage</string>
+    <string name="title_activity_navigation_page">Navigation Page</string>
+    <string name="title_activity_wake_up">Wake Up!</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+
+
+    //dialog
+    <string name="exit_dialog_message">Are you sure you want to exit?</string>
+    <string name="exit_dialog_title">Exiting app</string>
+    <string name="exit_dialog_ok">OK</string>
+    <string name="exit_dialog_cancel">Cancel</string>
+    <string name="edit_city">City</string>
+    <string name="edit_country">Country</string>
+    <string name="edit_description">Description</string>
+    <string name="edit_first_name">First Name</string>
+    <string name="edit_description_hint">Tell us about yourself! Country of origin, hobby, profession etc..</string>
 </resources>

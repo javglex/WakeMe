@@ -10,6 +10,7 @@
     android:focusableInTouchMode="true"
     android:nestedScrollingEnabled="false"
     android:orientation="vertical"
+    android:translationZ="2dp"
     android:weightSum="2"
     tools:layout_editor_absoluteX="0dp"
     tools:layout_editor_absoluteY="25dp">

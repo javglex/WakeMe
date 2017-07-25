@@ -1,33 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sv_alarms"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
-    android:background="@drawable/background_gradient"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical"
+    android:layout_alignParentTop="false"
+    android:layout_marginBottom="2dp"
+    android:layout_marginTop="2dp"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:nestedScrollingEnabled="false"
     android:paddingTop="2dp"
-    android:weightSum="1"
-    app:theme="@style/AppTheme.NoActionBar">
+    android:translationZ="2dp">
 
-    <ScrollView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/layout_map"
-        android:layout_marginTop="16dp"
-        android:layout_weight=".6"
-        android:nestedScrollingEnabled="false">
+        android:animateLayoutChanges="true"
+        android:background="@drawable/background_gradient"
+        android:orientation="vertical"
+        app:theme="@style/AppTheme.NoActionBar">
 
         <LinearLayout
             android:id="@+id/layout_alarm_clocks"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             android:layout_gravity="center_horizontal"
             android:animateLayoutChanges="true"
             android:gravity="center_horizontal"
             android:nestedScrollingEnabled="false"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingBottom="4dp"
+            android:paddingTop="4dp">
 
             <LinearLayout
                 android:id="@+id/layout_add_alarm"
@@ -53,28 +61,35 @@
                     android:text="Add Alarm" />
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
 
-    <LinearLayout
-        android:id="@+id/layout_map"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="1"
-        android:gravity="center_horizontal"
-        android:orientation="horizontal">
-
-        <RelativeLayout
-            android:id="@+id/fl_map_view"
+        <LinearLayout
+            android:id="@+id/layout_map"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@+id/layout_alarm_clocks"
+            android:layout_gravity="center_horizontal"
             android:gravity="center_horizontal"
-            android:minWidth="500dp"
-            android:paddingBottom="@dimen/fabs_top_margin">
+            android:orientation="horizontal">
 
-        </RelativeLayout>
-    </LinearLayout>
+            <RelativeLayout
+                android:id="@+id/fl_map_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:background="@drawable/rounded_corners"
+                android:gravity="center_horizontal"
+                android:minWidth="500dp"
+                android:paddingBottom="@dimen/fabs_top_margin"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp">
 
-</RelativeLayout>
+            </RelativeLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+</ScrollView>
+

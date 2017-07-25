@@ -56,7 +56,11 @@ public class DatabaseServices {
         mDatabase.child("users").child(userId).child("lcoordinates").setValue(location);
 
     }
+    public void writeUserTimeZone(User user) {
 
+        mDatabase.child("users").child(user.getUid()).child("timezone").setValue(user.getTimeZone());
+
+    }
     /**
      * writes alarm to database
      * @param alarm takes in alarm object
@@ -303,9 +307,58 @@ public class DatabaseServices {
 
     }
 
+    public void readUserMessages(String UID, final MessagesCallback callback){
+
+        DatabaseReference ref = mDatabase.child("messages");
+        //get alarms that are about to ring, limit to first 3
+        ref.orderByKey().startAt(UID).endAt(UID+"\uf8ff").limitToFirst(5).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                try {
+                    ArrayList<AudioMessage> messages = new ArrayList<>();
+                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+                        AudioMessage msg = new AudioMessage();
+                        msg.setFromUserId(postSnapshot.child("fromUserId").getValue(String.class));
+                        Log.d(READTAG," in readother messages fromuserID: "+msg.getFromUserId());
+                        msg.setMessageId(postSnapshot.child("messageId").getValue(String.class));
+                        Log.d(READTAG," in readother messages messageId: "+msg.getMessageId());
+                        msg.setToUserId(postSnapshot.child("toUserId").getValue(String.class));
+                        Log.d(READTAG," in readother messages toUserId : "+msg.getToUserId());
+                        msg.setOpened(postSnapshot.child("opened").getValue(boolean.class));
+                        Log.d(READTAG," in readother messages isOpened : "+msg.isOpened());
+                        msg.setUri(postSnapshot.child("uri").getValue(String.class));
+                        Log.d(READTAG," in readother messages URI: "+msg.getUri());
+                        msg.setVolatileMessage(postSnapshot.child("volatileMessage").getValue(boolean.class));
+                        Log.d(READTAG," in readother messages isVolatile : "+msg.isVolatileMessage());
+
+                        messages.add(msg);
+                    }
+                    callback.onSuccess(messages);
+
+                } catch ( Exception e){
+                    Log.e(READTAG, "read messages "+e.toString());
+                    callback.onFail(e.getMessage());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError firebaseError) {
+                callback.onFail(firebaseError.getMessage());
+            }
+
+        });
+        return;
+
+    }
+
 
     public interface LocCallback{
         void onSuccess(LCoordinates loc);
+        void onFail(String msg);
+    }
+
+    public interface MessagesCallback{
+        void onSuccess(ArrayList<AudioMessage> msg);
         void onFail(String msg);
     }
 

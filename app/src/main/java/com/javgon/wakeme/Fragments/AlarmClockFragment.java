@@ -14,11 +14,13 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.javgon.wakeme.Model.Alarm;
+import com.javgon.wakeme.Services.AlarmService;
 import com.javgon.wakeme.Services.DatabaseServices;
 import com.javgon.wakeme.Model.MyUserData;
 import com.javgon.wakeme.R;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.LinkedHashSet;
 
 /**
@@ -29,14 +31,13 @@ import java.util.LinkedHashSet;
 public class AlarmClockFragment extends BaseFragment implements View.OnClickListener, NumberPicker.OnValueChangeListener, ToggleButton.OnCheckedChangeListener{
 
     MyUserData mUserData;
-    View mRootView;
     TextView tvHour,tvMinute, tvAmPm;
     Button btnSave, btnDelete;
     LinearLayout clockLayoutClickable,clockLayout;
     ConstraintLayout editClockLayout;
     NumberPicker npHours, npMinutes;
     ToggleButton tbMon, tbTues, tbWed, tbThur, tbFri, tbSat, tbSun, tbAmPm;
-    int alarmHour, alarmMinute;
+    int mAlarmHour, mAlarmMinute;
     String userId;
     int alarmId;
     boolean isAm; //is it am(true) or is it pm(false)?
@@ -59,8 +60,8 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         mUserData=mUserData.getInstance(getActivity());
-        alarmHour=getArguments().getInt("alarmHour");
-        alarmMinute=getArguments().getInt("alarmMinute");
+        mAlarmHour =getArguments().getInt("alarmHour");
+        mAlarmMinute =getArguments().getInt("alarmMinute");
         alarmDays=getArguments().getIntegerArrayList("alarmDays");
         userId=mUserData.getUserID();
         alarmId=getArguments().getInt("alarmId");
@@ -70,7 +71,6 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         View rootView = inflater.inflate(R.layout.frag_alarm_clock, container, false);
-        mRootView=rootView;
         Log.d("ALARMCLOCK",""+mUserData.getAlarmSize());
         return rootView;
     }
@@ -113,18 +113,8 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
             editClockLayout.setVisibility(View.GONE);       //do not show edit alarm view
         else editClockLayout.setVisibility(View.VISIBLE);   //else show edit alarm view as soon as user adds alarm
 
-        if (alarmHour>12) {
-            tvHour.setText("" + (alarmHour - 12));
-            isAm=false;
-            tvAmPm.setText("PM");
-        }
-        else {
-            tvHour.setText("" + (alarmHour));
-            isAm=true;
-            tvAmPm.setText("AM");
-        }
-        String formatMinutes=String.format("%02d", alarmMinute);
-        tvMinute.setText(formatMinutes);
+        formatTimeDisplay();
+
 
         tbAmPm.setChecked(isAm);
         initToggleButtons();
@@ -142,6 +132,28 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
     public void onPause() {
         // TODO Auto-generated method stub
         super.onPause();
+    }
+
+    private void formatTimeDisplay(){
+
+        if (mAlarmHour ==00){
+            tvHour.setText("" + (mAlarmHour + 12));
+            isAm=true;
+            tvAmPm.setText("AM");
+        }else
+        if (mAlarmHour >12) {     //for military time that is 13:00 or larger, subtract 12 hours to get standard time
+            tvHour.setText("" + (mAlarmHour - 12));
+            isAm=false;
+            tvAmPm.setText("PM");
+        }
+        else {
+            tvHour.setText("" + (mAlarmHour));
+            isAm=true;
+            tvAmPm.setText("AM");
+        }
+
+        String formatMinutes=String.format("%02d", mAlarmMinute);
+        tvMinute.setText(formatMinutes);
     }
 
 
@@ -173,11 +185,11 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
     private void initPickers(){
         npHours.setMinValue(1);
         npHours.setMaxValue(12);
-        npHours.setValue(alarmHour);
+        npHours.setValue(mAlarmHour);
         npHours.setOnValueChangedListener(this);
         npMinutes.setMinValue(0);
         npMinutes.setMaxValue(59);
-        npMinutes.setValue(alarmMinute);
+        npMinutes.setValue(mAlarmMinute);
         npMinutes.setOnValueChangedListener(this);
         npMinutes.setFormatter(new NumberPicker.Formatter() { //displays minutes 1-9 as 01-09
             @Override
@@ -225,28 +237,41 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
     }
 
     private void saveAlarm(){
-        int minutes;
-        int hours;
+        int minutes = Integer.valueOf(npMinutes.getValue());
+        int hours = Integer.valueOf(npHours.getValue());
 
-        if (isAm)
-            hours=Integer.valueOf(npHours.getValue());
-        else
-            hours=Integer.valueOf(npHours.getValue()+12);
-        minutes=Integer.valueOf(npMinutes.getValue());
-        Alarm alarm = new Alarm(userId,alarmId,hours,minutes);
+
+
+        if (hours>=1&&hours<=11 && !isAm){
+            hours = Integer.valueOf(npHours.getValue() + 12);
+            tvHour.setText(String.valueOf(hours-12));
+        }else if(hours>11 && !isAm){
+            hours = Integer.valueOf(npHours.getValue()-12);
+            tvHour.setText(String.valueOf(hours+12));
+
+        }else{
+            tvHour.setText(String.valueOf(hours));
+        }
+
+        //save new alarm time to member variables of this class, in case updated alarm time needs to be used elsewhere
+        mAlarmHour=hours;
+        mAlarmMinute=minutes;
+
+        Alarm alarm = new Alarm(userId,alarmId, mAlarmHour, mAlarmMinute);
         //display saved values on alarm clock
-        tvHour.setText(String.valueOf(hours));
         String formatMinutes=String.format("%02d", minutes);
         tvMinute.setText(formatMinutes);
 
         //remove duplicates
-        alarmDays=new ArrayList<Integer>(new LinkedHashSet<Integer>(alarmDays));
+        alarmDays=new ArrayList<>(new LinkedHashSet<>(alarmDays));
         alarm.setRepeatDays(alarmDays);
 
         mUserData.setAlarm(alarm, alarmId);
         DatabaseServices.getInstance(getActivity()).writeAlarm(alarm);
 
         editClockLayout.setVisibility(View.GONE);
+
+        addAlarmService(alarmId);
     }
 
     private void deleteAlarm(){
@@ -259,8 +284,18 @@ public class AlarmClockFragment extends BaseFragment implements View.OnClickList
         Log.d("ALARMCLOCK",mUserData.toString());
         DatabaseServices.getInstance(getActivity()).deleteAlarm(alarmId);
         getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
-
+        MainFragment.refresh();
     }
+
+
+    public void addAlarmService(int requestCode){
+        Calendar alarmTime = Calendar.getInstance();
+        alarmTime.set(Calendar.HOUR_OF_DAY, mAlarmHour);
+        alarmTime.set(Calendar.MINUTE, mAlarmMinute);
+        alarmTime.set(Calendar.SECOND, 00);
+        AlarmService.setServiceAlarm(getActivity(),true,requestCode, alarmTime);
+    }
+
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

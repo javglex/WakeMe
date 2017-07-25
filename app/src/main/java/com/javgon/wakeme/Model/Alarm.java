@@ -72,15 +72,34 @@ public class Alarm implements Serializable{
         this.hoursUntilAlarm=hours;
     }
     public int getHoursUntilAlarm(){
-        int hour = diffHours();
-        return hour;
+        return hoursUntilAlarm;
     }
 
-    /**
-     * calculates the difference between today and alarm time
-     * @return JTime object diff in hours
-     */
-    public int diffHours() { //difference between this time and parameter time
+
+
+    public void setRepeatDays(ArrayList<Integer> days){
+        repeatDays=days;
+    }
+    public ArrayList<Integer> getRepeatDays(){
+        return repeatDays;
+    }
+
+
+    @Override
+    public String toString(){
+        String toString;
+        toString="\tHour: "+alarmTimeHours + " : " + "Minutes: "+ alarmTimeMinutes;
+        toString+="\n\tUserID: "+ userID + ", alarmID: " + alarmID;
+
+        return toString;
+    }
+}
+
+/**
+ * calculates the difference between today and alarm time
+ * @return JTime object diff in hours
+ */
+   /* public int diffHours() { //difference between this time and parameter time
         int diffHour;
         int diffTime;
         int diffDays;
@@ -97,22 +116,14 @@ public class Alarm implements Serializable{
         diffHour=Math.round((float)(diffTime/60.0));
 
         return diffHour;
-    }
-
-    public void setRepeatDays(ArrayList<Integer> days){
-        repeatDays=days;
-    }
-    public ArrayList<Integer> getRepeatDays(){
-        return repeatDays;
-    }
-
-    public int findNearestDistance(Calendar cal){
+    }*/
+   /* public int findNearestDistance(Calendar cal){
 
 
         int today=cal.get(Calendar.DAY_OF_WEEK)-1; //0-6 (sundat to saturday)
         Log.d("alarm today", ""+today);
-        int nearestDistance=100;
-        int prevNearestDistance=-100;
+        int nearestDistance=Integer.MAX_VALUE;
+        int prevNearestDistance;
         for (Integer day : repeatDays)
         {
             prevNearestDistance=day-today;
@@ -125,15 +136,5 @@ public class Alarm implements Serializable{
         }
         Log.d("alarms distance", ""+nearestDistance);
         return nearestDistance;
-    }
+    }*/
 
-
-    @Override
-    public String toString(){
-        String toString;
-        toString="\tHour: "+alarmTimeHours + " : " + "Minutes: "+ alarmTimeMinutes;
-        toString+="\n\tUserID: "+ userID + ", alarmID: " + alarmID;
-
-        return toString;
-    }
-}

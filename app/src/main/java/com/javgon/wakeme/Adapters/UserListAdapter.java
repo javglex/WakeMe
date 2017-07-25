@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.javgon.wakeme.Fragments.AudioRecordFragment;
+import com.javgon.wakeme.Fragments.UserListFragment;
 import com.javgon.wakeme.Model.UserSlot;
 import com.javgon.wakeme.R;
 
@@ -35,6 +37,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.MyView
 
     private List<UserSlot> list;
     private Context mContext;
+    public static final String TAG = "USERLISTADAPTER";
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView tvName, tvHoursUntil, tvLocation;
@@ -66,13 +69,12 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.MyView
 
         final MyViewHolder holder = new MyViewHolder(itemView);
 
-        holder.linearInfo.setOnClickListener((new View.OnClickListener() {
+        /*holder.linearInfo.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View view){
                 // showDetailAtm(view, list.get(position));
             }
-        }));
-
+        }));*/
         holder.btnSendMessage.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View view){
@@ -113,22 +115,21 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.MyView
 
 
 
-
-    /**
-     Showing atm details when its row is clicked
-     */
-
-    /*private void showDetailAtm(View view, userSlot info){
-        //inflate card page
-
-        AtmDetailsFragment nextFrag= AtmDetailsFragment.newInstance(info);
-        if (((Activity)view.getContext()).getFragmentManager().findFragmentByTag("ATMDETAILS")==null) { //if fragment does not exist
-            ((Activity)view.getContext()).getFragmentManager().beginTransaction()
-                    .add(R.id.frag_container, nextFrag, "ATMDETAILS")
-                    .addToBackStack(null)
-                    .commit();
+    RecyclerView.OnItemTouchListener mOnItemTouchListener = new RecyclerView.OnItemTouchListener() {
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            if (e.getAction() == MotionEvent.ACTION_DOWN && rv.getScrollState() == RecyclerView.SCROLL_STATE_SETTLING) {
+                Log.d(TAG, "onInterceptTouchEvent: click performed");
+                rv.findChildViewUnder(e.getX(), e.getY()).performClick();
+                return true;
+            }
+            return false;
         }
 
+        @Override
+        public void onTouchEvent(RecyclerView rv, MotionEvent e) {}
 
-    }*/
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
+    };
 }

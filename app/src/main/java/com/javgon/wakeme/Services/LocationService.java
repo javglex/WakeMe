@@ -56,8 +56,8 @@ public final class LocationService extends Service implements LocationListener {
                     .getSystemService(LOCATION_SERVICE);
 
             // getting GPS status
-            isGPSEnabled = locationManager
-                    .isProviderEnabled(LocationManager.GPS_PROVIDER);
+           /* isGPSEnabled = locationManager
+                    .isProviderEnabled(LocationManager.GPS_PROVIDER);*/
 
             // getting network status
             isNetworkEnabled = locationManager
@@ -66,7 +66,7 @@ public final class LocationService extends Service implements LocationListener {
             isPassiveEnabled=locationManager
                     .isProviderEnabled(LocationManager.PASSIVE_PROVIDER);
 
-            if (!isGPSEnabled && !isNetworkEnabled && !isPassiveEnabled) {
+            if (!isNetworkEnabled && !isPassiveEnabled) {       //removed isGPSenabled, app doesn't really require precise location
                 // no network provider is enabled
                 Log.d("GPS", "no available gps'");
                 showSettingsAlert();
@@ -81,10 +81,10 @@ public final class LocationService extends Service implements LocationListener {
                 } else
                 if (isPassiveEnabled) {
                     passiveProvider(callback);
-                } else
-                if (isGPSEnabled) {
+                } //else
+                /*if (isGPSEnabled) {
                     gpsProvider(callback);
-                }
+                }*/
 
             }
 
@@ -117,7 +117,7 @@ public final class LocationService extends Service implements LocationListener {
             }
         }catch(SecurityException e){
             Log.e("GPS",e.getMessage().toString() );
-            callback.onFail("Please enable a network.");
+            callback.onFail("Please enable a network");
         }
     }
 

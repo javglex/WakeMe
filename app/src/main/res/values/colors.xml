@@ -9,6 +9,7 @@
     <color name="transparentLight">#11ffffff</color>
     <color name="transparentAlarmAccent">#88786cff</color>
     <color name="colorAlarmLoaded">#18d100</color>
+    <color name="colorGreen">#00ff00</color>
     <color name="colorAlarmUnloaded">#ff0000</color>
     <color name="colorShadow">#6c6c6c</color>
     <color name="transparentMediumWhite">#87ffffff</color>

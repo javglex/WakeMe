@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.javgon.wakeme.CustomAnimation.JAnimations;
 import com.javgon.wakeme.Model.Alarm;
 import com.javgon.wakeme.Model.LCoordinates;
 import com.javgon.wakeme.Services.AlarmService;
@@ -29,11 +30,12 @@ import java.util.ArrayList;
  */
 
 public class MainFragment extends BaseFragment implements View.OnClickListener{
+    public static final String TAG = "MAINFRAGMENT";
     WorldMapSurfaceView worldMapSurfaceView;
     RelativeLayout mapView;
     LinearLayout alarmView;
-    LinearLayout addAlarmLayout;
-    MyUserData mUserData;
+    static LinearLayout addAlarmLayout;
+    static MyUserData mUserData;
     public static MainFragment newInstance(){
         MainFragment newFrag = new MainFragment();
         Bundle args = new Bundle();
@@ -48,15 +50,9 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
         mUserData=mUserData.getInstance(getActivity());
         readOwnAlarms();
         readAlarms();
-        addAlarmService();
     }
 
-    public void addAlarmService(){
 
-        Intent intent= AlarmService.newIntent(getActivity());
-        getActivity().startService(intent);
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -72,10 +68,10 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
         alarmView= (LinearLayout) view.findViewById(R.id.layout_alarm_clocks);
         worldMapSurfaceView = new WorldMapSurfaceView(getActivity());
         addAlarmLayout = (LinearLayout) view.findViewById(R.id.layout_add_alarm);
-        addAlarmLayout.setVisibility(View.GONE);
         addAlarmLayout.setOnClickListener(this);
         mapView.addView(worldMapSurfaceView);
         alarmView.getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
+        refresh();
 
     }
 
@@ -109,12 +105,12 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
                 hideProgressDialog();
                 worldMapSurfaceView.setCoordinates(locations);
                 for (LCoordinates location:locations)
-                    Log.d("Alarms locations", location.toString());
+                    Log.d(TAG, "getAlarmLocations : " +location.toString());
 
             }
             @Override
             public void onFail(String msg){
-                Log.e("FAIL", "getAlarmLocations() "+ msg);
+                Log.e(TAG, "getAlarmLocations "+ msg);
                 Toast.makeText(getActivity(), msg,
                         Toast.LENGTH_SHORT).show();
             }
@@ -129,14 +125,22 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
         post.readOwnAlarms(new DatabaseServices.AlarmCallback(){
             @Override
             public void onSuccess(ArrayList<Alarm> alarms){
+                Log.d(TAG,"readownalarms "+ "success");
+                for (Alarm alarm : alarms)
+                    Log.d(TAG,"readownalarms "+ alarm.toString());
+
                 mUserData.setAlarmList(alarms);
                 displayAlarms();
+                refresh();
+
             }
             @Override
             public void onFail(String msg){
-                Log.e("FAIL","readownalarms() "+ msg);
+                Log.e(TAG,"readownalarms() "+ msg);
                 Toast.makeText(getActivity(), msg,
                         Toast.LENGTH_SHORT).show();
+                refresh();
+
             }
         });
 
@@ -147,12 +151,15 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
      */
     private void displayAlarms(){
         ArrayList<Alarm> alarms =mUserData.getAlarmList();
-        if (alarms.size()<3)  //if no alarms are set by user,
-            addAlarmLayout.setVisibility(View.VISIBLE); //prompt user to add new alarm
-        else //else display set alarms
         for (int i=0; i<alarms.size(); i++){
             addAlarmToView(alarms.get(i),i);
         }
+    }
+
+    public static void refresh(){
+        if (mUserData.getAlarmList().size()<3)  //if no alarms are set by user,
+            addAlarmLayout.setVisibility(View.VISIBLE); //prompt user to add new alarm
+        else addAlarmLayout.setVisibility(View.GONE);
     }
 
     private void addAlarmToView(Alarm alarm, int id){
@@ -163,7 +170,7 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
         alarmView.addView(alarmFrame,0);  //add it to top (0) of view
         alarmView.invalidate();
         createAlarmFrag(alarmFrame.getId(), alarm);
-        Log.d("alarmView", ""+alarmFrame.getId());
+        Log.d(TAG, "addAlarmToView "+alarmFrame.getId());
     }
 
 
@@ -173,8 +180,8 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
     private void createAlarmFrag(int id, Alarm alarm){
         //inflate card page
         AlarmClockFragment nextFrag= AlarmClockFragment.newInstance(alarm);
-        if (getFragmentManager().findFragmentByTag("ALARMCLOCK"+id)==null) { //if fragment does not exist
-            getFragmentManager().beginTransaction()
+        if (getActivity().getSupportFragmentManager().findFragmentByTag("ALARMCLOCK"+id)==null) { //if fragment does not exist
+            getActivity().getSupportFragmentManager().beginTransaction()
                     .replace(id, nextFrag, "ALARMCLOCK"+id)
                     .commit();
         }
@@ -193,12 +200,13 @@ public class MainFragment extends BaseFragment implements View.OnClickListener{
                 repeat.add(1);
                 repeat.add(2);
                 alarm.setRepeatDays(repeat);
+                alarm.setHoursUntilAlarm(100);       //100 hours so that server doesn't immediately register it, and other users can't immediately see it as 0.
                 mUserData.addAlarm(alarm);
-                Log.d("ALARMCLOCK",mUserData.toString());
+                Log.d(TAG, "onClick :"+mUserData.toString());
                 post.writeAlarm(alarm);
                 addAlarmToView(alarm,alarmId);
-                if (mUserData.getAlarmSize()>=3)
-                    addAlarmLayout.setVisibility(View.GONE);
+                refresh();
+                JAnimations.doBounceOutInAnimation(addAlarmLayout,0);
                 break;
             default:
                 break;

@@ -1,6 +1,5 @@
 package com.javgon.wakeme.Model;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -21,55 +20,71 @@ import java.util.Iterator;
  * Created by javier gonzalez on 5/2/2017.
  * Stores main user data such as id, name, location, etc
  * Will be using bootleg observer patters to keep in sync with disk and
- * prevent OS from collecting static instance and wiping it's date
+ * prevent OS from collecting static instance and wiping out data
  */
 
 public class MyUserData implements Serializable {
     // Constant with a file name
-    public final String FILENAME = "UserData1.ser";
-    private static MyUserData myUserData;
-    private Activity sActivity;
+    public final static String TAG = "MYUSERDATA";
+    private final String LOCATION="location";
+    private final String MYID="id";
+    private final String MYNAME="name";
+    private final String URIPROFILE="profile";
+    private final String MYALARMS="alarms";
+    private final String OTHERALARMS="opponent_alarms";
 
-    private LCoordinates myLocation;
+    private static MyUserData myUserData;
+    private Context sContext;
     ArrayList<Alarm> alarms=new ArrayList<>();  //list of own alarms
     ArrayList<Alarm> othersAlarm = new ArrayList<>();       //list of other user's alarms
     private String myName;
     private String myId;
+    private String uriProfile;
+    private LCoordinates myLocation;
 
-    public static MyUserData getInstance(Activity activity){
+    public static MyUserData getInstance(Context context){
 
         if (myUserData==null){
-            myUserData=new MyUserData(activity);
+            myUserData=new MyUserData(context);
         }
 
         return myUserData;
     }
 
-    private MyUserData(Activity activity){
-        sActivity=activity;
-        loadFromPrefs();
+    private MyUserData(Context context){
+        sContext=context;
+        try {
+            loadFromPrefs();
+        }catch (Exception e){
+            e.printStackTrace();
+
+        }
 
     }
 
 
     /**************** MODIFIERS ***********************/
 
-    public void setUserData(LCoordinates loc, String id, String name){
-        this.myLocation=loc;
-        this.myId=id;
-        this.myName=name;
-        saveToPrefs();
+    public void setUserData(User myUser){
+        this.myLocation= myUser.getLCoordinates();
+        this.myId=myUser.getUid();
+        this.myName=myUser.getUsername();
+        this.uriProfile=myUser.getProfilePic();
+        saveToPrefs(LOCATION,this.myLocation);
+        saveToPrefs(MYID,this.myId);
+        saveToPrefs(MYNAME,this.myName);
+        saveToPrefs(URIPROFILE,this.uriProfile);
     }
 
     public void setLocation(LCoordinates loc){
         this.myLocation=loc;
-        saveToPrefs();
+        saveToPrefs(LOCATION,this.myLocation);
     }
 
     public void setAlarmList(ArrayList<Alarm> alarms){
         this.alarms=alarms;
         Log.d("userprefs", "alarmsbeforesave: \n"+alarms.toString());
-        saveToPrefs();
+        saveToPrefs(MYALARMS,this.alarms);
     }
 
     public void setAlarm(Alarm alarm, int alarmId){
@@ -80,13 +95,14 @@ public class MyUserData implements Serializable {
 
             }
         }
-        saveToPrefs();
+        saveToPrefs(MYALARMS,this.alarms);
+
     }
     public void setOthersAlarmList(ArrayList<Alarm> alarms){
         this.othersAlarm=alarms;
         Log.d("userprefs", "alarmsbeforesave: \n"+othersAlarm.toString());
 
-        saveToPrefs();
+        saveToPrefs(OTHERALARMS,this.othersAlarm);
     }
 
     public void addAlarm(Alarm alarm){
@@ -101,7 +117,7 @@ public class MyUserData implements Serializable {
                 else return 0;
             }
         });
-        saveToPrefs();
+        saveToPrefs(MYALARMS,this.alarms);
     }
     public void deleteAlarm(int alarmID){
         //remove alarm
@@ -109,7 +125,7 @@ public class MyUserData implements Serializable {
             if(iterator.next().getAlarmID()==alarmID)
                 iterator.remove();
         }
-        saveToPrefs();
+        saveToPrefs(MYALARMS,this.alarms);
     }
 
     /*********************GETTERS**********/
@@ -133,6 +149,9 @@ public class MyUserData implements Serializable {
         return alarms.get(i);
     }
 
+    public String getUriProfile(){
+        return this.uriProfile;
+    }
 
     public String getUserID(){
         Log.d("USERPREFS", "loadFromPrefs my id: "+myId);
@@ -153,7 +172,6 @@ public class MyUserData implements Serializable {
 
     //returns number of alarms
     public int getAlarmSize(){
-        loadFromPrefs();
         return alarms.size();
     }
 
@@ -165,6 +183,7 @@ public class MyUserData implements Serializable {
         toString="User ID: "+ getUserID();
         toString+="\nUser Location: "+ getUserLocation();
         toString+="\nUser Name: "+ getUserName();
+        toString+="\nuriProfile: " + getUriProfile();
         toString+="\nAlarm List size: "+getAlarmSize();
         toString+="\nAlarms: ";
 
@@ -176,59 +195,64 @@ public class MyUserData implements Serializable {
     }
 
 
-    public void saveToPrefs(){
+    private void saveToPrefs(String key, Object value){
 
-        SharedPreferences sharedpreferences = sActivity.getSharedPreferences("MYUSERDATA", Context.MODE_PRIVATE);
+        SharedPreferences sharedpreferences = sContext.getSharedPreferences(TAG, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(value);
+        editor.putString(key, json);
+        editor.apply();
+
+    }
+
+    private void saveToPrefsOld(){
+        SharedPreferences sharedpreferences = sContext.getSharedPreferences("MYUSERDATA", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
         Gson gson = new Gson();
         String json = gson.toJson(myLocation);
         editor.putString("location", json);
         editor.putString("name",myName);
         editor.putString("id",myId);
+        editor.putString("uriProfile",uriProfile);
         json = gson.toJson(alarms);
         editor.putString("myAlarms",json);
         Log.d("USERPREFS","saved alarms \n"+ "other alarms \n"+othersAlarm.toString());
         json = gson.toJson(othersAlarm);
         editor.putString("otherAlarms",json);
-        editor.commit();
+        //editor.commit();
         editor.apply();
-
 
     }
 
-    public void loadFromPrefs(){
+    private void loadFromPrefs() throws Exception{
+        SharedPreferences sharedpreferences = sContext.getSharedPreferences("MYUSERDATA", Context.MODE_PRIVATE);
 
-        try {
+        Gson gson = new Gson();
+        JsonReader json = new JsonReader(new StringReader(sharedpreferences.getString("location", "")));
+        json.setLenient(true);
+        myLocation = gson.fromJson(json, LCoordinates.class);
 
-            SharedPreferences sharedpreferences = sActivity.getSharedPreferences("MYUSERDATA", Context.MODE_PRIVATE);
+        json = new JsonReader(new StringReader(sharedpreferences.getString("name", "")));
+        json.setLenient(true);
+        myName=gson.fromJson(json, String.class);
 
-            Gson gson = new Gson();
-            JsonReader json = new JsonReader(new StringReader(sharedpreferences.getString("location", "")));
-            json.setLenient(true);
-            myLocation = gson.fromJson(json, LCoordinates.class);
-            json = new JsonReader(new StringReader(sharedpreferences.getString("name", "")));
-            json.setLenient(true);
+        json = new JsonReader(new StringReader(sharedpreferences.getString("uriProfile", "")));
+        json.setLenient(true);
+        uriProfile=gson.fromJson(json, String.class);
 
-            myName=gson.fromJson(json, String.class);
-            json = new JsonReader(new StringReader(sharedpreferences.getString("id", "")));
-            json.setLenient(true);
+        json = new JsonReader(new StringReader(sharedpreferences.getString("id", "")));
+        json.setLenient(true);
+        myId=gson.fromJson(json, String.class);
 
-            myId=gson.fromJson(json, String.class);
-            json = new JsonReader(new StringReader(sharedpreferences.getString("myAlarms", "")));
-            json.setLenient(true);
+        json = new JsonReader(new StringReader(sharedpreferences.getString("myAlarms", "")));
+        json.setLenient(true);
+        Type type = new TypeToken< ArrayList < Alarm >>() {}.getType();
+        alarms=gson.fromJson(json, type);
 
-            Type type = new TypeToken< ArrayList < Alarm >>() {}.getType();
-            alarms=gson.fromJson(json, type);
-            json = new JsonReader(new StringReader(sharedpreferences.getString("otherAlarms", "")));
-            json.setLenient(true);
-
-            othersAlarm=gson.fromJson(json, type);
-
-        }catch (NullPointerException e){
-            e.printStackTrace();
-
-        }
-
+        json = new JsonReader(new StringReader(sharedpreferences.getString("otherAlarms", "")));
+        json.setLenient(true);
+        othersAlarm=gson.fromJson(json, type);
 
     }
 

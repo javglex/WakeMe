@@ -1,5 +1,7 @@
 package com.javgon.wakeme.Model;
 
+import android.net.Uri;
+
 import java.util.Date;
 
 /**
@@ -22,6 +24,10 @@ public class AudioMessage {
     boolean volatileMessage;
     Date sentAt;
 
+
+    public AudioMessage(){
+
+    }
 
     public AudioMessage(String messageId, String uri, String fromUserId, String toUserId){
         this.messageId=messageId;
@@ -79,10 +85,15 @@ public class AudioMessage {
         this.sentAt = sentAt;
     }
 
-    public String getUri() {
+    public Uri getUri() {
+
+        Uri uri =  Uri.parse(this.uri);
+
         return uri;
     }
-
+    public String getUriString() {
+        return uri;
+    }
     public void setUri(String uri) {
         this.uri = uri;
     }

@@ -5,6 +5,8 @@ import android.net.Uri;
 import com.javgon.wakeme.R;
 
 import java.net.URI;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Created by javgon on 4/13/2017.
@@ -12,11 +14,10 @@ import java.net.URI;
 
 public class User {
 
-    private String username;
-    private String email;
+    private String username,email,uid,profilePic, country, city, description;
     private LCoordinates lCoordinates;
-    private String uid;
-    private String profilePic;
+    private int timeZone;
+
 
     public User() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
@@ -28,10 +29,11 @@ public class User {
         this.email = email;
         this.lCoordinates=loc;
         this.uid=uid;
-       setProfilePic(profilePic);
-
-
-
+        setProfilePic(profilePic);
+        this.timeZone= TimeZone.getDefault().getRawOffset();
+        if (TimeZone.getDefault().inDaylightTime(new Date())){
+            this.timeZone+=TimeZone.getDefault().getDSTSavings();
+        }
     }
 
     public User(User user) {
@@ -47,7 +49,7 @@ public class User {
 
     public void setProfilePic(String profilePic) {
 
-        if (profilePic==""){
+        if (profilePic.equals(null)){
             this.profilePic="https://firebasestorage.googleapis.com/v0/b/wakeme-91c98.appspot.com/o/profile_default.jpg?alt=media&token=bc26c03f-fe6a-471e-980d-a39e7e2a7ca2";
         }
         else
@@ -84,4 +86,35 @@ public class User {
         return email;
     }
 
+    public int getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(int timeZone) {
+        this.timeZone = timeZone;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

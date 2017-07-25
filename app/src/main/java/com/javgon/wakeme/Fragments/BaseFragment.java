@@ -52,6 +52,7 @@ public class BaseFragment extends Fragment {
      * Read alarms set by other users world wide
      */
     protected void readAlarms(){
+        showProgressDialog();
         DatabaseServices post = DatabaseServices.getInstance(getActivity());
         post.readAlarms(new DatabaseServices.AlarmCallback(){
             @Override
@@ -61,12 +62,14 @@ public class BaseFragment extends Fragment {
                 getUserSlots();
                 for (Alarm alarm:alarms)
                     Log.d("readAlarms", alarm.toString());
+                hideProgressDialog();
             }
             @Override
             public void onFail(String msg){
                 Log.e("FAIL", "readalarms() "+msg);
                 Toast.makeText(getActivity(), msg,
                         Toast.LENGTH_SHORT).show();
+                hideProgressDialog();
             }
         });
     }
